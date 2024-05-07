@@ -16,3 +16,8 @@ Setup python enviromment using conda or mamba. If you haven't installed mamba on
 ```bash
 $ mamba env create -f gpu_env.yml
 ```
+
+## Finetune Model
+
+See 'atcs-crosslingual-sharing/fill-mask/README.MD' as an example how to finetune fill-mask task.
+We will need to create `atcs-crosslingual-sharing/<task>/` for different LLM tasks. 

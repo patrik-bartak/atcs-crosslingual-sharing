@@ -4,3 +4,12 @@ This contains code to finetune model for Fill Mask Task. Masked language modelin
 
 More info on [fill-mask](https://huggingface.co/tasks/fill-mask)
 
+## Quick Start
+
+Finetune 'xlm-roberta-base' model using `DavideTHU/chinese_news_dataset` dataset.
+
+```
+$ cd <your-workspace>/atcs-crosslingual-sharing
+$ python atcs-crosslingual-sharing/fill-mask/train.py --model='FacebookAI/xlm-roberta-base' --split='train' --dataset='DavideTHU/chinese_news_dataset' --batch-size=1 
+```
+

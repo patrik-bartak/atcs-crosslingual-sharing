@@ -1,5 +1,6 @@
 import argparse
 
+
 def parse_arguments():
     """
     This function parses the arguments for the fill mask task.
@@ -17,7 +18,7 @@ def parse_arguments():
     parser.add_argument(
         "--batch-size",
         type=int,
-        default=32,
+        default=1,
         help="The batch size to be used for training.",
     )
 
@@ -33,13 +34,6 @@ def parse_arguments():
         type=str,
         default="checkpoints",
         help="The directory where the checkpoints will be saved.",
-    )
-
-    parser.add_argument(
-        "--tokenizer-dir",
-        type=str,
-        default="tokenizer",
-        help="The directory where the tokenizer will be saved.",
     )
 
     parser.add_argument(
@@ -63,16 +57,32 @@ def parse_arguments():
         help="The learning rate to be used for training.",
     )
 
-
     parser.add_argument(
-        "--cuda", default=False, action="store_true", help="Enable cuda computation"
+        "--cuda",
+        default=True,
+        action=argparse.BooleanOptionalAction,
+        help="Enable cuda computation",
     )
 
     parser.add_argument(
-        "--dataset-file",
+        "--dataset",
         type=str,
         default=None,
-        help="The path to the dataset file.",
+        help="hugging face dataset name",
+    )
+
+    parser.add_argument(
+        "--split",
+        type=str,
+        default="train",
+        help="hugging dataset split",
+    )
+
+    parser.add_argument(
+        "--mlm-prob",
+        type=float,
+        default=0.15,
+        help="hugging dataset split",
     )
 
     args = parser.parse_args()
