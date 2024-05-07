@@ -1,5 +1,7 @@
 # atcs-crosslingual-sharing
 
+The code is base on this [Hugging Face Template](https://github.com/MorenoLaQuatra/transformers-tasks-templates/)
+
 # Installation
 
 Download this repo into your local machine
