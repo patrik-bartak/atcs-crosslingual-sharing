@@ -1,17 +1,18 @@
 # atcs-crosslingual-sharing
 
-The code is base on this [Hugging Face Template](https://github.com/MorenoLaQuatra/transformers-tasks-templates/)
+The code is base on this [Hugging Face Template](https://github.com/MorenoLaQuatra/transformers-tasks-templates/).
 
 # Installation
 
-Download this repo into your local machine
+Download this repo into your local machine:
+
 ```bash
 $ cd <your workspace>
 $ git clone https://github.com/patrik-bartak/atcs-crosslingual-sharing.git
 $ cd atcs-crosslingual-sharing
 ```
 
-Setup python enviromment using conda or mamba. If you haven't installed mamba on your machine, follow this [guide](https://www.usna.edu/Users/cs/fknoll/SD211/mamba.html)
+Setup python environment using conda or mamba. If you haven't installed mamba on your machine, follow this [guide](https://www.usna.edu/Users/cs/fknoll/SD211/mamba.html).
 
 ```bash
 $ mamba env create -f gpu_env.yml
