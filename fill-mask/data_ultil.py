@@ -16,14 +16,16 @@ def group_texts(examples, block_size):
 
 
 def process_dataset(hg_dataset, split, tokenizer):
+    
     train_dataset = None
     val_dataset = None
+
+    def tokenize(examples):
+        return tokenizer(examples["output"])
+
     if hg_dataset == "DavideTHU/chinese_news_dataset":
         datasets = load_dataset(hg_dataset, split=split)
         datasets = datasets.train_test_split(test_size=0.2)
-
-        def tokenize(examples):
-            return tokenizer(examples["output"])
 
         tokenized_datasets = datasets.map(
             tokenize,
@@ -39,7 +41,21 @@ def process_dataset(hg_dataset, split, tokenizer):
         )
         train_dataset = lm_datasets['train']
         val_dataset = lm_datasets['test']
-    # Add new dataset here.
+
+    # Add new datasets here.
+    elif hg_dataset == "Davlan/sib200":
+        datasets = load_dataset(hg_dataset, split=split)
+        datasets = datasets.train_test_split(test_size=0.2)
+
+        tokenized_datasets = datasets.map(
+            tokenize,
+            batched=True,
+            num_proc=4,
+        )
+
+        train_dataset = lm_datasets['train']
+        val_dataset = lm_datasets['test']
+
     else:
         raise Exception(f"Dataset {hg_dataset} not supported")
 
