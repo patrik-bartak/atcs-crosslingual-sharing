@@ -51,6 +51,7 @@ def process_dataset(hg_dataset, split, tokenizer):
             tokenize,
             batched=True,
             num_proc=4,
+            remove_columns=["index_id", "category", "text"],
         )
 
         train_dataset = lm_datasets['train']
