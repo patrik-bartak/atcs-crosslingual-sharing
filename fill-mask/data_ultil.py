@@ -56,6 +56,25 @@ def process_dataset(hg_dataset, split, tokenizer):
 
         train_dataset = lm_datasets['train']
         val_dataset = lm_datasets['test']
+    
+    elif hg_dataset == "wikiann":
+        datasets = load_dataset(hg_dataset, split=split)
+        datasets = datasets.train_test_split(test_size=0.2)
+
+        tokenized_datasets = datasets.map(
+            tokenize,
+            batched=True,
+            num_proc=4,
+            remove_columns= ["langs", "spans", "tokens", "ner_tags"],
+        )
+        lm_datasets = tokenized_datasets.map(
+            group_texts,
+            batched=True,
+            num_proc=4,
+            fn_kwargs={"block_size": tokenizer.model_max_length},
+        )
+        train_dataset = lm_datasets['train']
+        val_dataset = lm_datasets['test']
 
     else:
         raise Exception(f"Dataset {hg_dataset} not supported")
