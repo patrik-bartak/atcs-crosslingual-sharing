@@ -1,18 +1,21 @@
 import argparse
 
+from dataset import XML_R
 
-def parse_arguments():
+
+def get_finetune_parser():
     """
-    This function parses the arguments for the fill mask task.
-    :return: The parsed arguments.
+    Get arg parser for the finetuning script.
+    :return: The parser.
     """
 
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--model",
         type=str,
-        default="FacebookAI/xlm-roberta-base",
-        help="The identifier for the model to be used. It can be an identifier from the transformers library or a path to a local model.",
+        default=XML_R,
+        help="The identifier for the model to be used. It can be an identifier from the transformers library or a "
+        "path to a local model.",
     )
 
     parser.add_argument(
@@ -44,13 +47,6 @@ def parse_arguments():
     )
 
     parser.add_argument(
-        "--max-seq-length",
-        type=int,
-        default=1024,
-        help="The maximum length of the sequence.",
-    )
-
-    parser.add_argument(
         "--lr",
         type=float,
         default=5e-5,
@@ -72,18 +68,16 @@ def parse_arguments():
     )
 
     parser.add_argument(
-        "--split",
-        type=str,
-        default="train",
-        help="hugging dataset split",
+        "--test_run",
+        action="store_true",
+        help="Test run or not",
     )
 
     parser.add_argument(
-        "--mlm-prob",
-        type=float,
-        default=0.15,
-        help="hugging dataset split",
+        "--max_steps",
+        type=int,
+        default=None,
+        help="Maximum number of training steps",
     )
 
-    args = parser.parse_args()
-    return args
+    return parser
