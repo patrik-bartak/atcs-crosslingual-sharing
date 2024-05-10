@@ -80,4 +80,26 @@ def get_finetune_parser():
         help="Maximum number of training steps",
     )
 
+    parser.add_argument(
+        "--type",
+        type=str,
+        default="magnitude",
+        help="Type of pruning to use",
+        choices={"magnitude", "gradient", "snip"}
+    )
+
+    parser.add_argument(
+        "--sparsity",
+        type=float,
+        default=0.1,
+        help="Percentage of neurons to mask per step",
+    )
+
+    parser.add_argument(
+        "--target_percent",
+        type=float,
+        default=0.9,
+        help="The percentage of the original performance to keep",
+    )
+
     return parser

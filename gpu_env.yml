@@ -5,6 +5,8 @@ channels:
   - conda-forge
   - defaults
 dependencies:
+  - optimum
+  - neural-compressor
   - python=3.10.13
   - pip=23.3.1
   - pytorch-cuda=11.8
