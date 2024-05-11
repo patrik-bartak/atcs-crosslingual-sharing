@@ -1,5 +1,6 @@
 # The current pruning config is based off of Prasanna's method
 
+import os
 from copy import deepcopy
 from utils.constants import *
 from optimum.intel import INCTrainer
@@ -9,6 +10,7 @@ from utils.dataset import build_dataset, get_data_collator
 from transformers import (
     AutoModelForSequenceClassification,
     AutoModelForTokenClassification,
+    AutoModelForMultipleChoice,
     AutoTokenizer,
     TrainingArguments,
     TrainerCallback,
@@ -42,16 +44,29 @@ class AccuracyStoppingCallback(TrainerCallback):
             return control_copy
 
 
-# Update this to load from "ft_models" (and probably only depend on the task dataset)
-def build_model_tokenizer(hf_model_id, dataset_name):
+def build_model_tokenizer(model_name, dataset_name):
     if dataset_name == WIKIANN:
-        model = AutoModelForTokenClassification.from_pretrained(hf_model_id)
+        model = AutoModelForTokenClassification.from_pretrained(model_name)
         save_dir = PR_WIKI
-    else:
-        model = AutoModelForSequenceClassification.from_pretrained(hf_model_id)
+
+    elif dataset_name == SIB200:
+        model = AutoModelForMultipleChoice.from_pretrained(model_name)
+        save_dir = PR_TOPP
+
+    elif dataset_name == XNLI:
+        model = AutoModelForSequenceClassification.from_pretrained(model_name)
         save_dir = PR_XNLI
 
-    tokenizer = AutoTokenizer.from_pretrained(hf_model_id)
+    elif dataset_name == MQA:
+        model = AutoModelForMultipleChoice.from_pretrained(
+            model_name
+        )  # I assume this one is what we need
+        save_dir = PR_MQNA
+
+    else:
+        raise ValueError(f"Dataset {dataset_name} not supported")
+
+    tokenizer = AutoTokenizer.from_pretrained(model_name)
     return model, tokenizer, save_dir
 
 
