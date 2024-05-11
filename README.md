@@ -1,8 +1,9 @@
-# atcs-crosslingual-sharing
+# **Crosslingual Sharing**
+## **Identifying Subnetworks for languages**
 
 The code is base on this [Hugging Face Template](https://github.com/MorenoLaQuatra/transformers-tasks-templates/).
 
-# Installation
+## **Installation**
 
 Download this repo into your local machine:
 
@@ -15,10 +16,28 @@ $ cd atcs-crosslingual-sharing
 Setup python environment using conda or mamba. If you haven't installed mamba on your machine, follow this [guide](https://www.usna.edu/Users/cs/fknoll/SD211/mamba.html).
 
 ```bash
+$ conda env create -f gpu_env.yml
+```
+
+```bash
 $ mamba env create -f gpu_env.yml
 ```
 
-## Finetune Model
+## **Model Finetuning**
 
-See 'atcs-crosslingual-sharing/fill-mask/README.MD' as an example how to finetune fill-mask task.
-We will need to create `atcs-crosslingual-sharing/<task>/` for different LLM tasks. 
+To finetune a model, run the following script:
+```bash
+$ python finetune.py --dataset <insert_dataset_name_here> \ ...
+```
+The list of arguments that can be specified are the following:
+
+
+
+## **Model Pruning**
+
+To prune a model, run the following script:
+```bash
+$ python prune.py --dataset <insert_dataset_name_here> \ ...
+```
+The list of arguments that can be specified are the same as with fine-tuning, with some additional arguments:
+
