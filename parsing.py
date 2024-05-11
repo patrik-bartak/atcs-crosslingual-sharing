@@ -1,6 +1,5 @@
 import argparse
-
-from dataset import XML_R
+from utils.constants import *
 
 
 def get_finetune_parser():
@@ -65,6 +64,7 @@ def get_finetune_parser():
         type=str,
         default=None,
         help="hugging face dataset name",
+        choices={XNLI, SIB200, WIKIANN, MQA},
     )
 
     parser.add_argument(
@@ -85,7 +85,7 @@ def get_finetune_parser():
         type=str,
         default="magnitude",
         help="Type of pruning to use",
-        choices={"magnitude", "gradient", "snip"}
+        choices={"magnitude", "gradient", "snip"},
     )
 
     parser.add_argument(

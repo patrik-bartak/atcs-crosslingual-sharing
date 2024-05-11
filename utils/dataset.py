@@ -1,15 +1,7 @@
 from functools import partial
-
+from utils.constants import *
 from datasets import load_dataset
-from transformers import (DataCollatorForTokenClassification,
-                          DataCollatorWithPadding)
-
-XML_R = "FacebookAI/xlm-roberta-base"
-
-XNLI = "xnli"
-SIB200 = "Davlan/sib200"
-WIKIANN = "wikiann"
-MQA = "clips/mqa"
+from transformers import DataCollatorForTokenClassification, DataCollatorWithPadding
 
 
 def get_data_collator(hf_dataset, tokenizer):
@@ -42,17 +34,21 @@ def build_dataset(hf_dataset, tokenizer):
     if hf_dataset == XNLI:
         dataset = load_dataset(XNLI, "en")
         tokenize_fn = tokenize_xnli
+
     elif hf_dataset == SIB200:
         # TODO: load the correct data language subset
         dataset = load_dataset(SIB200)
         tokenize_fn = tokenize_sib200
+
     elif hf_dataset == WIKIANN:
         dataset = load_dataset(WIKIANN, "en")
         tokenize_fn = tokenize_wikiann
+
     elif hf_dataset == MQA:
         # TODO: load the correct data language subset
         dataset = load_dataset(MQA)
         tokenize_fn = tokenize_mqa
+
     else:
         raise Exception(f"Dataset {hf_dataset} not supported")
 

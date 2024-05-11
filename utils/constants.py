@@ -1,5 +1,14 @@
 # For consistency
 
+# The model
+XML_R = "FacebookAI/xlm-roberta-base"
+
+# The HuggingFace datasets
+XNLI = "xnli"
+SIB200 = "Davlan/sib200"
+WIKIANN = "wikiann"
+MQA = "clips/mqa"
+
 # Directory of fine-tuned models:
 FT_WIKI = "/ft_models/WikiAnn"
 FT_XNLI = "/ft_models/XNLI"
