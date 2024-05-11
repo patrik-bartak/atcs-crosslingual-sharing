@@ -1,1 +1,0 @@
-Folder for named entity recognition task file(s).
