@@ -1,14 +1,24 @@
-from transformers import (AutoModelForSequenceClassification,
-                          AutoModelForTokenClassification, AutoTokenizer,
-                          Trainer, TrainingArguments)
+from transformers import (
+    AutoModelForSequenceClassification,
+    AutoModelForTokenClassification,
+    AutoTokenizer,
+    Trainer,
+    TrainingArguments,
+)
 
-from dataset import WIKIANN, build_dataset, get_data_collator
+from dataset import *
 from parsing import get_finetune_parser
 
 
 def build_model_tokenizer(hf_model_id, dataset_name):
     if dataset_name == WIKIANN:
-        model = AutoModelForTokenClassification.from_pretrained(hf_model_id)
+        model = AutoModelForTokenClassification.from_pretrained(
+            hf_model_id, num_labels=7  # From 0 to 6
+        )
+
+    elif dataset_name == XNLI:
+        return NotImplemented
+
     else:
         model = AutoModelForSequenceClassification.from_pretrained(hf_model_id)
     tokenizer = AutoTokenizer.from_pretrained(hf_model_id)

@@ -1,8 +1,6 @@
 from functools import partial
-
 from datasets import load_dataset
-from transformers import (DataCollatorForTokenClassification,
-                          DataCollatorWithPadding)
+from transformers import DataCollatorForTokenClassification, DataCollatorWithPadding
 
 XML_R = "FacebookAI/xlm-roberta-base"
 
@@ -12,6 +10,7 @@ WIKIANN = "wikiann"
 MQA = "clips/mqa"
 
 
+# WikiAnn Utility Functions
 def align_labels_with_tokens(labels, word_ids):
     new_labels = []
     current_word = None
@@ -45,6 +44,7 @@ def tokenize_and_align_labels(input, tokenizer):
     return tokenized_inputs
 
 
+# General functions
 def get_data_collator(hf_dataset, tokenizer):
     return (
         DataCollatorForTokenClassification(tokenizer=tokenizer)
@@ -60,7 +60,7 @@ def tokenize_xnli(rows, tokenizer):
 
 
 def tokenize_sib200(rows, tokenizer):
-    return tokenizer(NotImplemented, return_special_tokens_mask=True)
+    return tokenizer(rows["text"], return_special_tokens_mask=True)
 
 
 def tokenize_wikiann(rows, tokenizer):
@@ -75,17 +75,21 @@ def build_dataset(hf_dataset, tokenizer):
     if hf_dataset == XNLI:
         dataset = load_dataset(XNLI, "en")
         tokenize_fn = tokenize_xnli
+
     elif hf_dataset == SIB200:
         # TODO: load the correct data language subset
         dataset = load_dataset(SIB200, "eng_Latn")
         tokenize_fn = tokenize_sib200
+
     elif hf_dataset == WIKIANN:
         dataset = load_dataset(WIKIANN, "en")
         tokenize_fn = tokenize_wikiann
+
     elif hf_dataset == MQA:
         # TODO: load the correct data language subset
         dataset = load_dataset(MQA)
         tokenize_fn = tokenize_mqa
+
     else:
         raise Exception(f"Dataset {hf_dataset} not supported")
 
