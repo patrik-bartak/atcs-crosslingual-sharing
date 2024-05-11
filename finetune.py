@@ -1,6 +1,5 @@
 # The current pruning config is based off of Prasanna's method
 
-import os
 from copy import deepcopy
 from utils.constants import *
 from optimum.intel import INCTrainer
@@ -64,7 +63,7 @@ def build_model_tokenizer(model_name, dataset_name):
         save_dir = PR_MQNA
 
     else:
-        raise ValueError(f"Dataset {dataset_name} not supported")
+        raise Exception(f"Dataset {dataset_name} not supported")
 
     tokenizer = AutoTokenizer.from_pretrained(model_name)
     return model, tokenizer, save_dir
