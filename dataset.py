@@ -77,7 +77,7 @@ def build_dataset(hf_dataset, tokenizer):
         tokenize_fn = tokenize_xnli
     elif hf_dataset == SIB200:
         # TODO: load the correct data language subset
-        dataset = load_dataset(SIB200)
+        dataset = load_dataset(SIB200, "eng_Latn")
         tokenize_fn = tokenize_sib200
     elif hf_dataset == WIKIANN:
         dataset = load_dataset(WIKIANN, "en")
@@ -94,8 +94,9 @@ def build_dataset(hf_dataset, tokenizer):
         batched=True,
         num_proc=4,
     )
-    # Some datasets may need us to manually call .train_test_split() to get the splits
+    # Some datasets may need us to manually call .train_test_split() to
+    # get the splits if they are not predefined
     train_dataset = tok_dataset["train"]
-    val_dataset = tok_dataset["test"]
+    val_dataset = tok_dataset["validation"]
 
     return train_dataset, val_dataset
