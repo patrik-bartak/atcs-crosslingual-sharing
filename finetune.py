@@ -19,8 +19,17 @@ def build_model_tokenizer(hf_model_id, dataset_name):
     elif dataset_name == XNLI:
         return NotImplemented
 
+    elif dataset_name == SIB200:
+        model = AutoModelForSequenceClassification.from_pretrained(
+            hf_model_id, num_labels=7
+        )  # Seven different categories
+
+    elif dataset_name == MQA:
+        return NotImplemented
+
     else:
-        model = AutoModelForSequenceClassification.from_pretrained(hf_model_id)
+        raise Exception(f"Dataset {dataset_name} not supported")
+
     tokenizer = AutoTokenizer.from_pretrained(hf_model_id)
     return model, tokenizer
 

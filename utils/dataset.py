@@ -4,6 +4,12 @@ from datasets import load_dataset
 from transformers import DataCollatorForTokenClassification, DataCollatorWithPadding
 
 
+# Function to map categories to labels
+def map_categories_to_labels(example):
+    example["label"] = cat2idx[example["category"]]
+    return example
+
+
 def get_data_collator(hf_dataset, tokenizer):
     return (
         DataCollatorForTokenClassification(tokenizer=tokenizer)
@@ -19,7 +25,7 @@ def tokenize_xnli(rows, tokenizer):
 
 
 def tokenize_sib200(rows, tokenizer):
-    return tokenizer(NotImplemented, return_special_tokens_mask=True)
+    return tokenizer(rows["text"], return_special_tokens_mask=True)
 
 
 def tokenize_wikiann(rows, tokenizer):
@@ -37,7 +43,7 @@ def build_dataset(hf_dataset, tokenizer):
 
     elif hf_dataset == SIB200:
         # TODO: load the correct data language subset
-        dataset = load_dataset(SIB200)
+        dataset = load_dataset(SIB200, "eng_Latn")
         tokenize_fn = tokenize_sib200
 
     elif hf_dataset == WIKIANN:
@@ -57,6 +63,12 @@ def build_dataset(hf_dataset, tokenizer):
         batched=True,
         num_proc=4,
     )
+
+    # Need to create a label column for SIB200
+    if hf_dataset == SIB200:
+        # Map categories to labels
+        tok_dataset = tok_dataset.map(map_categories_to_labels)
+
     # Some datasets may need us to manually call .train_test_split() to get the splits
     train_dataset = tok_dataset["train"]
     val_dataset = tok_dataset["test"]
