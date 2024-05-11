@@ -1,6 +1,7 @@
 # The current pruning config is based off of Prasanna's method
 
 from copy import deepcopy
+from utils.constants import *
 from optimum.intel import INCTrainer
 from parsing import get_finetune_parser
 from neural_compressor import WeightPruningConfig
@@ -32,14 +33,17 @@ class AccuracyStoppingCallback(TrainerCallback):
 
             return control_copy
 
-
+# Update this to load from "ft_models" (and probably only depend on the task dataset)
 def build_model_tokenizer(hf_model_id, dataset_name):
     if dataset_name == WIKIANN:
         model = AutoModelForTokenClassification.from_pretrained(hf_model_id)
+        save_dir = PR_WIKI
     else:
         model = AutoModelForSequenceClassification.from_pretrained(hf_model_id)
+        save_dir = PR_XNLI
+
     tokenizer = AutoTokenizer.from_pretrained(hf_model_id)
-    return model, tokenizer
+    return model, tokenizer, save_dir
 
 
 def build_trainer_args(args):
@@ -73,7 +77,7 @@ def build_pruning_config(args):
 
 def main(args):
     print(args)
-    model, tokenizer = build_model_tokenizer(args.model, args.dataset)
+    model, tokenizer, save_dir = build_model_tokenizer(args.model, args.dataset)
     pruning_config = build_pruning_config(args)
     _, val_dataset = build_dataset(args.dataset, tokenizer)
     data_collator = get_data_collator(args.dataset, tokenizer)
@@ -87,6 +91,7 @@ def main(args):
     )
     trainer.add_callbacks(AccuracyStoppingCallback(trainer, args.target_percent))
     trainer.train()
+    trainer.save_model(save_dir)
 
 
 if __name__ == "__main__":
