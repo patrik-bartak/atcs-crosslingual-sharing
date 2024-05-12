@@ -32,6 +32,13 @@ def get_finetune_parser():
     )
 
     parser.add_argument(
+        "--seed",
+        type=int,
+        default=42,
+        help="The seed to use for training.",
+    )
+
+    parser.add_argument(
         "--epochs",
         type=int,
         default=10,
