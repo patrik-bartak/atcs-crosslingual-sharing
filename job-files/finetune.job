@@ -4,9 +4,9 @@
 #SBATCH --gres=gpu:1
 #SBATCH --cpus-per-task=9
 #SBATCH --gpus=1
-#SBATCH --job-name=meaneval
+#SBATCH --job-name=sibft
 #SBATCH --ntasks=1
-#SBATCH --time=03:00:00
+#SBATCH --time=01:00:00
 #SBATCH --mem=32000M
 #SBATCH --output=job_outs/sibft_%A.out
 
@@ -27,4 +27,6 @@ srun python -u $file_dir/finetune.py \
     --dataset "Davlan/sib200" \
     --checkpts $ckpt_dir \
     --log-dir $log_dir \
-    --test-run
+    --batch-size 16 \
+    --lr 1e-5 \
+    --epochs 20 \
