@@ -60,6 +60,7 @@ def build_trainer_args(args):
         bf16=False,
         max_steps=1 if args.test_run else args.max_steps,
         save_strategy="no",
+        seed=args.seed,
     )
 
 
