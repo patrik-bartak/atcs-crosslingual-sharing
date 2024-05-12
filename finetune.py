@@ -59,7 +59,7 @@ def main(args):
         model=model,
         args=build_trainer_args(args),
         train_dataset=train_dataset,
-        eval_dataset=val_dataset if not args.test_run else None,
+        eval_dataset=val_dataset,
         data_collator=data_collator,
     )
     trainer.train()
