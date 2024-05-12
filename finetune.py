@@ -1,3 +1,4 @@
+import numpy as np
 from transformers import (
     AutoModelForSequenceClassification,
     AutoModelForTokenClassification,
@@ -8,6 +9,14 @@ from transformers import (
 
 from utils.dataset import *
 from parsing import get_finetune_parser
+
+
+# For getting the accuracy
+def compute_metrics(eval_pred):
+    predictions, labels = eval_pred
+    # Assuming your model outputs logits
+    predictions = np.argmax(predictions, axis=1)
+    return {"accuracy": (predictions == labels).mean()}
 
 
 def build_model_tokenizer(hf_model_id, dataset_name):
@@ -47,6 +56,7 @@ def build_trainer_args(args):
         no_cuda=not args.cuda,
         bf16=False,
         max_steps=1 if args.test_run else args.max_steps,
+        compute_metrics=compute_metrics,
     )
 
 
