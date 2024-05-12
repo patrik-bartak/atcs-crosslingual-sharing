@@ -97,6 +97,11 @@ def test_model(trainer, tokenizer, hf_dataset, lang_list, tokenize_fn):
             num_proc=4,
         )
 
+        # Need to create a label column for SIB200
+        if hf_dataset == SIB200:
+            # Map categories to labels
+            tok_dataset = tok_dataset.map(map_categories_to_labels)
+
         test_data = tok_dataset["test"]
         out = trainer.evaluate(test_data, metric_key_prefix="test")
         print(f"Results for Language '{lang}':")
