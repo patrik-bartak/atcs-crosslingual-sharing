@@ -6,7 +6,7 @@ from transformers import DataCollatorForTokenClassification, DataCollatorWithPad
 
 # Function to map categories to labels
 def map_categories_to_labels(example):
-    example["label"] = cat2idx[example["category"]]
+    example["label"] = sib_cat2idx[example["category"]]
     return example
 
 

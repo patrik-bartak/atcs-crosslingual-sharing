@@ -3,11 +3,13 @@ from transformers import (
     AutoModelForSequenceClassification,
     AutoModelForTokenClassification,
     AutoTokenizer,
+    AutoConfig,
     Trainer,
     TrainingArguments,
 )
 
 from utils.dataset import *
+from utils.constants import *
 from datasets import load_metric
 from parsing import get_finetune_parser
 
@@ -32,8 +34,13 @@ def build_model_tokenizer(hf_model_id, dataset_name):
         return NotImplemented
 
     elif dataset_name == SIB200:
+
+        # For editing the idx2label and label2idx settings
+        config = AutoConfig.from_pretrained(hf_model_id)
+        config.id2label = sib_idx2cat
+        config.label2id = sib_cat2idx
         model = AutoModelForSequenceClassification.from_pretrained(
-            hf_model_id, num_labels=7
+            hf_model_id, num_labels=7, config=config
         )  # Seven different categories
 
     elif dataset_name == MQA:

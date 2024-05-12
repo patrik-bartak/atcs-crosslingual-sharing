@@ -16,7 +16,7 @@ PR_MQNA = "/pruned_models/MQA"
 PR_TOPP = "/pruned_models/SIB200"
 
 # For SIB200 (converting category to label)
-cat2idx = {
+sib_cat2idx = {
     "science/technology": 0,
     "travel": 1,
     "politics": 2,
@@ -25,6 +25,8 @@ cat2idx = {
     "entertainment": 5,
     "geography": 6,
 }
+
+sib_idx2cat = {v: k for k, v in sib_cat2idx.items()}
 
 # For getting the correct test datasets
 # SIB200
