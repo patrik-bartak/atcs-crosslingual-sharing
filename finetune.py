@@ -8,15 +8,18 @@ from transformers import (
 )
 
 from utils.dataset import *
+from datasets import load_metric
 from parsing import get_finetune_parser
 
 
 # For getting the accuracy
+metric = load_metric("accuracy")
+
+
 def compute_metrics(eval_pred):
-    predictions, labels = eval_pred
-    # Assuming your model outputs logits
-    predictions = np.argmax(predictions, axis=1)
-    return {"accuracy": (predictions == labels).mean()}
+    logits, labels = eval_pred
+    predictions = np.argmax(logits, axis=-1)
+    return metric.compute(predictions=predictions, references=labels)
 
 
 def build_model_tokenizer(hf_model_id, dataset_name):
