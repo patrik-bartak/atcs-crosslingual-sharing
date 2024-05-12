@@ -59,6 +59,7 @@ def build_trainer_args(args):
         no_cuda=not args.cuda,
         bf16=False,
         max_steps=1 if args.test_run else args.max_steps,
+        save_strategy="no",
     )
 
 
@@ -75,7 +76,6 @@ def main(args):
         data_collator=data_collator,
         compute_metrics=compute_metrics,
     )
-
     trainer.train()
     trainer.save_model(args.savedir)
 
