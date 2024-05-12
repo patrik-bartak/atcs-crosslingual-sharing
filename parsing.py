@@ -81,7 +81,7 @@ def get_finetune_parser():
     )
 
     parser.add_argument(
-        "--max_steps",
+        "--max-steps",
         type=int,
         default=20,
         help="Maximum number of training steps",
