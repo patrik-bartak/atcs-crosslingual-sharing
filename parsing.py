@@ -75,7 +75,7 @@ def get_finetune_parser():
     )
 
     parser.add_argument(
-        "--test_run",
+        "--test-run",
         action="store_true",
         help="Test run or not",
     )
