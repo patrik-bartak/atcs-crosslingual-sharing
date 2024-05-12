@@ -15,7 +15,7 @@ from parsing import get_finetune_parser
 
 
 # For getting the accuracy
-metric = load_metric("accuracy")
+metric = load_metric("accuracy", trust_remote_code=True)
 
 
 def compute_metrics(eval_pred):
@@ -39,8 +39,9 @@ def build_model_tokenizer(hf_model_id, dataset_name):
         config = AutoConfig.from_pretrained(hf_model_id)
         config.id2label = sib_idx2cat
         config.label2id = sib_cat2idx
+        config.num_labels = 7
         model = AutoModelForSequenceClassification.from_pretrained(
-            hf_model_id, num_labels=7, config=config
+            hf_model_id, config=config
         )  # Seven different categories
 
     elif dataset_name == MQA:
