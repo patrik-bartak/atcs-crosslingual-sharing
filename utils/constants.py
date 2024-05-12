@@ -25,3 +25,13 @@ cat2idx = {
     "entertainment": 5,
     "geography": 6,
 }
+
+# For getting the correct test datasets
+# SIB200
+lang_sib = ["ces_Latn", "hin_Deva", "ind_Latn", "nld_Latn", "zho_Hans"]
+
+# WikiAnn
+lang_wik = ["cs", "hi", "id", "nl", "zh"]
+
+# XNLI (need three other datasets)
+lang_xnli = ["hi", "zh"]

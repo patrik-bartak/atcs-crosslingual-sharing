@@ -18,6 +18,13 @@ def get_finetune_parser():
     )
 
     parser.add_argument(
+        "--savedir",
+        type=str,
+        default=None,
+        help="The path to save the best model to.",
+    )
+
+    parser.add_argument(
         "--batch-size",
         type=int,
         default=1,

@@ -63,6 +63,11 @@ def main(args):
         data_collator=data_collator,
     )
     trainer.train()
+    trainer.save_model(args.savedir)
+
+    # Testing on languages
+    hf_dataset, lang_list, tokenize_fn = get_test_data(args.dataset)
+    test_model(trainer, tokenizer, hf_dataset, lang_list, tokenize_fn)
 
 
 if __name__ == "__main__":

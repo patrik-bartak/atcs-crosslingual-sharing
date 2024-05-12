@@ -71,18 +71,51 @@ def tokenize_mqa(rows, tokenizer):
     return tokenizer(NotImplemented, return_special_tokens_mask=True)
 
 
+# For getting the test datasets (returns a list)
+def get_test_data(hf_dataset):
+    if hf_dataset == XNLI:
+        return hf_dataset, lang_xnli, tokenize_xnli
+
+    elif hf_dataset == SIB200:
+        return hf_dataset, lang_sib, tokenize_sib200
+
+    elif hf_dataset == WIKIANN:
+        return hf_dataset, lang_wik, tokenize_wikiann
+
+    else:
+        raise Exception(f"Value {hf_dataset} not supported")
+
+
+# For evaluating per language
+def test_model(trainer, tokenizer, hf_dataset, lang_list, tokenize_fn):
+
+    for lang in lang_list:
+        dataset = load_dataset(hf_dataset, lang)
+        tok_dataset = dataset.map(
+            partial(tokenize_fn, tokenizer=tokenizer),
+            batched=True,
+            num_proc=4,
+        )
+
+        test_data = tok_dataset["test"]
+        out = trainer.evaluate(test_data, metric_key_prefix="test")
+        print(f"Results for Language '{lang}':")
+        print(out, "\n")
+
+
 def build_dataset(hf_dataset, tokenizer):
     if hf_dataset == XNLI:
         dataset = load_dataset(XNLI, "en")
         tokenize_fn = tokenize_xnli
 
     elif hf_dataset == SIB200:
-        # TODO: load the correct data language subset
         dataset = load_dataset(SIB200, "eng_Latn")
         tokenize_fn = tokenize_sib200
+
     elif hf_dataset == WIKIANN:
         dataset = load_dataset(WIKIANN, "en")
         tokenize_fn = tokenize_wikiann
+
     elif hf_dataset == MQA:
         # TODO: load the correct data language subset
         dataset = load_dataset(MQA)
