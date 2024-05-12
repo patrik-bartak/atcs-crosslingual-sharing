@@ -60,7 +60,7 @@ def build_trainer_args(args):
         per_device_train_batch_size=args.batch_size,
         per_device_eval_batch_size=args.batch_size,
         evaluation_strategy="epoch",
-        save_strategy="no",
+        save_strategy="epoch",
         load_best_model_at_end=True,
         learning_rate=args.lr,
         no_cuda=not args.cuda,
