@@ -115,6 +115,7 @@ def build_dataset(hf_dataset, tokenizer):
 
     elif hf_dataset == SIB200:
         dataset = load_dataset(SIB200, "eng_Latn")
+        dataset = dataset.remove_columns("index_id")
         tokenize_fn = tokenize_sib200
 
     elif hf_dataset == WIKIANN:
@@ -138,6 +139,7 @@ def build_dataset(hf_dataset, tokenizer):
     if hf_dataset == SIB200:
         # Map categories to labels
         tok_dataset = tok_dataset.map(map_categories_to_labels)
+        tok_dataset = tok_dataset.remove_columns("category")
 
     # Some datasets may need us to manually call .train_test_split() to get the splits
     train_dataset = tok_dataset["train"]
