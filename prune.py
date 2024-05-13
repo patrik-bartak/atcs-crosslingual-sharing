@@ -160,7 +160,7 @@ def main(args):
         trainer.add_callback(AccuracyStoppingCallback(trainer, args.target_percent))
         trainer.train()
 
-        save_dir = f"{args.savedir}/{lang}"
+        save_dir = f"{save_dir}/{lang}"
         trainer.save_model(save_dir)
 
 
