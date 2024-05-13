@@ -145,7 +145,9 @@ def main(args):
             tok_dataset = tok_dataset.map(map_categories_to_labels)
             tok_dataset = tok_dataset.remove_columns("category")
 
-        val_dataset = tok_dataset["val"]
+        val_dataset = tok_dataset[
+            "validation"
+        ]  # May need to be adjusted for each dataset
         trainer = INCTrainer(
             model=model_c,
             pruning_config=pruning_config,
