@@ -145,7 +145,7 @@ def main(args):
             "validation"
         ]  # May need to be adjusted for each dataset
         arguments = build_trainer_args(args)
-        arguments.output_dir = f"{args.model}-{args.dataset}-{lang}"
+        arguments.output_dir = f"{args.model}-{lang}"
         trainer = INCTrainer(
             model=model_c,
             pruning_config=pruning_config,
