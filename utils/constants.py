@@ -9,12 +9,6 @@ SIB200 = "Davlan/sib200"
 WIKIANN = "wikiann"
 MQA = "clips/mqa"
 
-# Directory of pruned models:
-PR_WIKI = "/pruned_models/WikiAnn"
-PR_XNLI = "/pruned_models/XNLI"
-PR_MQNA = "/pruned_models/MQA"
-PR_TOPP = "/pruned_models/SIB200"
-
 # For SIB200 (converting category to label)
 sib_cat2idx = {
     "science/technology": 0,
