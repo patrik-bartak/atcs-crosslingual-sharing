@@ -152,7 +152,7 @@ def main(args):
             )
 
             # To get the accuracy on the test
-            test_data = tok_dataset["evaluation"]
+            test_data = tok_dataset["validation"]
             out = trainer.evaluate(test_data, metric_key_prefix="eval")
             orig_acc = out["eval_accuracy"]
 
