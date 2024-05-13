@@ -9,7 +9,7 @@ from datasets import load_metric
 from optimum.intel import INCTrainer
 from parsing import get_finetune_parser
 from neural_compressor import WeightPruningConfig
-from utils.dataset import build_dataset, get_data_collator
+from utils.dataset import get_data_collator
 from transformers import (
     AutoModelForSequenceClassification,
     AutoModelForTokenClassification,
@@ -93,7 +93,7 @@ def build_trainer_args(args):
         load_best_model_at_end=True,
         learning_rate=args.lr,
         no_cuda=not args.cuda,
-        do_train=True,
+        do_train=False,
         do_eval=True,
         bf16=False,
         max_steps=-1,
@@ -121,8 +121,8 @@ def main(args):
     )
 
     # Freeze the model parameters
-    for param in model.parameters():
-        param.requires_grad = False
+    # for param in model.parameters():
+    #     param.requires_grad = False
 
     pruning_config = build_pruning_config(args)
     hf_dataset, lang_list, tokenize_fn = get_test_data(args.dataset)
