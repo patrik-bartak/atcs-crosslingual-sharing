@@ -101,6 +101,7 @@ def test_model(trainer, tokenizer, hf_dataset, lang_list, tokenize_fn):
         if hf_dataset == SIB200:
             # Map categories to labels
             tok_dataset = tok_dataset.map(map_categories_to_labels)
+            tok_dataset = tok_dataset.remove_columns("category")
 
         test_data = tok_dataset["test"]
         out = trainer.evaluate(test_data, metric_key_prefix="test")
