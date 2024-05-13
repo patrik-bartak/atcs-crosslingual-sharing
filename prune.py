@@ -28,7 +28,7 @@ class AccuracyStoppingCallback(TrainerCallback):
         if control.should_evaluate:
             control_copy = deepcopy(control)
             eval_metrics = self._trainer.evaluate(
-                eval_dataset=self._trainer.train_dataset, metric_key_prefix="train"
+                eval_dataset=self._trainer.eval_dataset, metric_key_prefix="eval"
             )
             eval_accuracy = eval_metrics["eval_accuracy"]
 
@@ -83,7 +83,7 @@ def build_trainer_args(args):
         do_train=True,
         do_eval=True,
         bf16=False,
-        max_steps=1 if args.test_run else args.max_steps,
+        max_steps=-1,
     )
 
 
@@ -93,7 +93,7 @@ def build_pruning_config(args):
         target_sparsity=0.5,  # So we can actually prune more (default is 0.9)
         pruning_type=args.type,
         start_step=1,  # Seems to me that we can prune per epoch using the training argument
-        end_step=args.max_steps,
+        end_step=args.epochs * 10000,  # To keep pruning
         min_sparsity_ratio_per_op=args.sparsity,
         max_sparsity_ratio_per_op=args.sparsity,
         pruning_scope="global",
