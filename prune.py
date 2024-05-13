@@ -102,7 +102,7 @@ def build_pruning_config(args):
         target_sparsity=0.5,  # So we can actually prune more (because the default is 0.5)
         pruning_type=args.type,
         start_step=1,
-        end_step=1,
+        end_step=51,
         pruning_scope="global",
         pruning_op_types=["Conv", "Linear", "Attention"],
         excluded_op_names=["roberta.embeddings"],  # Do not mask the embeddings
