@@ -91,7 +91,7 @@ def build_trainer_args(args):
         do_eval=True,
         bf16=False,
         max_steps=-1,
-        save_total_limit=3,
+        save_total_limit=2,
         save_only_model=True,
     )
 
@@ -99,16 +99,17 @@ def build_trainer_args(args):
 # Might need to specify excluded layers (i.e., embeddings)
 def build_pruning_config(args):
     return WeightPruningConfig(
-        target_sparsity=0.3,  # So we can actually prune more (because the default is 0.9)
+        target_sparsity=0.5,  # So we can actually prune more (because the default is 0.5)
         pruning_type=args.type,
         start_step=1,
-        end_step=50,
+        end_step=1,
         pruning_scope="global",
         pruning_op_types=["Conv", "Linear", "Attention"],
         excluded_op_names=["roberta.embeddings"],  # Do not mask the embeddings
         pattern=args.pattern,
         pruning_frequency=1,
         max_sparsity_ratio_per_op=0.999,  # To enable a component being 'completely' sparse
+        sparsity_decay_type="linear",
     )
 
 
