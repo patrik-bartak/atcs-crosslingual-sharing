@@ -1,7 +1,9 @@
 # The current pruning config is based off of Prasanna's method
 
+import numpy as np
 from copy import deepcopy
 from utils.constants import *
+from datasets import load_metric
 from optimum.intel import INCTrainer
 from parsing import get_finetune_parser
 from neural_compressor import WeightPruningConfig
@@ -14,6 +16,15 @@ from transformers import (
     TrainingArguments,
     TrainerCallback,
 )
+
+# For getting the accuracy
+metric = load_metric("accuracy", trust_remote_code=True)
+
+
+def compute_metrics(eval_pred):
+    logits, labels = eval_pred
+    predictions = np.argmax(logits, axis=-1)
+    return metric.compute(predictions=predictions, references=labels)
 
 
 # Need to adjust this more
@@ -103,6 +114,11 @@ def build_pruning_config(args):
 def main(args):
     print(args)
     model, tokenizer, save_dir = build_model_tokenizer(args.model, args.dataset)
+
+    # Freeze the model parameters
+    for param in model.parameters():
+        param.requires_grad = False
+
     pruning_config = build_pruning_config(args)
     _, val_dataset = build_dataset(args.dataset, tokenizer)
     data_collator = get_data_collator(args.dataset, tokenizer)
