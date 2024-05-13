@@ -97,15 +97,16 @@ def build_trainer_args(args):
 # Might need to specify excluded layers (i.e., embeddings)
 def build_pruning_config(args):
     return WeightPruningConfig(
-        target_sparsity=0.5,  # So we can actually prune more (because the default is 0.9)
+        target_sparsity=0.3,  # So we can actually prune more (because the default is 0.9)
         pruning_type=args.type,
         start_step=1,
-        end_step=args.epochs * 1e7,  # To keep pruning
+        end_step=args.epochs * 1e8,  # To keep pruning
         pruning_scope="global",
         pruning_op_types=["Conv", "Linear", "Attention"],
         excluded_op_names=["roberta.embeddings"],  # Do not mask the embeddings
         sparsity_decay_type="linear",
         pattern=args.pattern,
+        min_sparsity_ratio_per_op=0.1,  # Ensure that each layer has at least 10% sparsity
     )
 
 
