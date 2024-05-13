@@ -100,7 +100,7 @@ def build_pruning_config(args):
         target_sparsity=0.3,  # So we can actually prune more (because the default is 0.9)
         pruning_type=args.type,
         start_step=1,
-        end_step=10000,  # To keep pruning
+        end_step=1000,
         pruning_scope="global",
         pruning_op_types=["Conv", "Linear", "Attention"],
         excluded_op_names=["roberta.embeddings"],  # Do not mask the embeddings
@@ -152,8 +152,7 @@ def main(args):
             )
 
             # To get the accuracy on the test
-            test_data = tok_dataset["validation"]
-            out = trainer.evaluate(test_data, metric_key_prefix="eval")
+            out = trainer.evaluate(val_dataset, metric_key_prefix="eval")
             orig_acc = out["eval_accuracy"]
 
             print(f"\nSeed: {seed}")
@@ -166,7 +165,7 @@ def main(args):
 
             save_dir = f"{args.savedir}/{seed}/{lang}"
 
-            out_c = trainer.evaluate(test_data, metric_key_prefix="eval")
+            out_c = trainer.evaluate(val_dataset, metric_key_prefix="eval")
             curr_acc = out_c["eval_accuracy"]
 
             print(f"Current Accuracy: {curr_acc}")
