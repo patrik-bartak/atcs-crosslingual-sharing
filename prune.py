@@ -39,7 +39,6 @@ class AccuracyStoppingCallback(TrainerCallback):
 
     def on_epoch_end(self, args, state, control, **kwargs):
         if control.should_evaluate:
-            control_copy = deepcopy(control)
             eval_metrics = self._trainer.evaluate(
                 eval_dataset=self._trainer.eval_dataset, metric_key_prefix="eval"
             )
@@ -51,9 +50,9 @@ class AccuracyStoppingCallback(TrainerCallback):
             ):  # To ensure the accuracy stays within the target range
 
                 print("Stopping Training...")
-                control_copy.should_training_stop = True
+                control.should_training_stop = True
 
-            return control_copy
+            return control
 
 
 def build_model_tokenizer(model_name, tok_name, dataset_name):
