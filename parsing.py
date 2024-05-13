@@ -42,6 +42,7 @@ def get_finetune_parser():
         "--seed",
         type=int,
         default=42,
+        nargs="+",
         help="The seed to use for training.",
     )
 

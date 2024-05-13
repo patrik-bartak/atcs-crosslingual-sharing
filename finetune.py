@@ -69,7 +69,7 @@ def build_trainer_args(args):
         max_steps=(
             1 if args.test_run else (-1 if args.no_max_steps else args.max_steps)
         ),
-        seed=args.seed,
+        seed=args.seed[0],
     )
 
 
