@@ -144,10 +144,12 @@ def main(args):
         val_dataset = tok_dataset[
             "validation"
         ]  # May need to be adjusted for each dataset
+        arguments = build_trainer_args(args)
+        arguments.output_dir = f"{args.model}-{args.dataset}-{lang}"
         trainer = INCTrainer(
             model=model_c,
             pruning_config=pruning_config,
-            args=build_trainer_args(args),
+            args=arguments,
             train_dataset=val_dataset,  # I assume we only ever use the dev dataset
             eval_dataset=val_dataset,
             data_collator=data_collator,
