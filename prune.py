@@ -44,12 +44,15 @@ class AccuracyStoppingCallback(TrainerCallback):
                 eval_dataset=self._trainer.eval_dataset, metric_key_prefix="eval"
             )
 
+            print(f"Stopping Accuracy: {self.stopping_acc * self.target_percent}")
             eval_accuracy = eval_metrics["eval_accuracy"]
 
             if (
                 eval_accuracy < self.stopping_acc * self.target_percent
             ):  # To ensure the accuracy stays within the target range
-                control.should_training_stop = True
+
+                print("Stopping Training...")
+                control_copy.should_training_stop = True
 
             return control_copy
 
@@ -101,7 +104,7 @@ def build_pruning_config(args):
         target_sparsity=0.3,  # So we can actually prune more (because the default is 0.9)
         pruning_type=args.type,
         start_step=1,
-        end_step=1000,
+        end_step=10,
         pruning_scope="global",
         pruning_op_types=["Conv", "Linear", "Attention"],
         excluded_op_names=["roberta.embeddings"],  # Do not mask the embeddings
