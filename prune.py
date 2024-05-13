@@ -92,6 +92,7 @@ def build_trainer_args(args):
         bf16=False,
         max_steps=-1,
         save_total_limit=3,
+        save_only_model=True,
     )
 
 
