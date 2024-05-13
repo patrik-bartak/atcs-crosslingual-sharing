@@ -43,6 +43,7 @@ class AccuracyStoppingCallback(TrainerCallback):
             eval_metrics = self._trainer.evaluate(
                 eval_dataset=self._trainer.eval_dataset, metric_key_prefix="eval"
             )
+
             eval_accuracy = eval_metrics["eval_accuracy"]
 
             if self.stopping_acc == None:  # For the base accuracy
@@ -93,7 +94,7 @@ def build_trainer_args(args):
         load_best_model_at_end=True,
         learning_rate=args.lr,
         no_cuda=not args.cuda,
-        do_train=False,
+        do_train=True,
         do_eval=True,
         bf16=False,
         max_steps=-1,
@@ -155,6 +156,7 @@ def main(args):
             train_dataset=val_dataset,  # I assume we only ever use the dev dataset
             eval_dataset=val_dataset,
             data_collator=data_collator,
+            compute_metrics=compute_metrics,
         )
 
         trainer.add_callback(AccuracyStoppingCallback(trainer, args.target_percent))
