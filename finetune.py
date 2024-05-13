@@ -6,6 +6,7 @@ from transformers import (
     AutoConfig,
     Trainer,
     TrainingArguments,
+    get_linear_schedule_with_warmup,
 )
 
 from utils.dataset import *
@@ -84,6 +85,16 @@ def main(args):
         data_collator=data_collator,
         compute_metrics=compute_metrics,
     )
+
+    # For SIB200 specifically (warmup)
+    if args.dataset == SIB200:
+        scheduler = get_linear_schedule_with_warmup(
+            trainer.optimizer, num_warmup_steps=10, num_training_steps=10
+        )
+
+        # Set the scheduler
+        trainer.lr_scheduler = scheduler
+
     trainer.train()
     trainer.save_model(args.savedir)
 
