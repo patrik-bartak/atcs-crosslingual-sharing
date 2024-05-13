@@ -70,6 +70,7 @@ def build_trainer_args(args):
             1 if args.test_run else (-1 if args.no_max_steps else args.max_steps)
         ),
         seed=args.seed[0],
+        save_total_limit=3,
     )
 
 
