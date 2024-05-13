@@ -108,9 +108,8 @@ def build_pruning_config(args):
         pruning_type=args.type,
         start_step=1,  # Seems to me that we can prune per epoch using the training argument
         end_step=args.epochs * 10000,  # To keep pruning
-        min_sparsity_ratio_per_op=args.sparsity,
-        max_sparsity_ratio_per_op=args.sparsity,
         pruning_scope="global",
+        pruning_op_types=["conv", "linear", "attention"],
         excluded_op_names=["roberta.embeddings"],  # Do not mask the embeddings
     )
 
@@ -120,10 +119,6 @@ def main(args):
     model, tokenizer, save_dir = build_model_tokenizer(
         args.model, args.tokenizer, args.dataset
     )
-
-    # Freeze the model parameters
-    # for param in model.parameters():
-    #     param.requires_grad = False
 
     pruning_config = build_pruning_config(args)
     hf_dataset, lang_list, tokenize_fn = get_test_data(args.dataset)
