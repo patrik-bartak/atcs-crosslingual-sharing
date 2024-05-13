@@ -48,6 +48,7 @@ class AccuracyStoppingCallback(TrainerCallback):
 
             if self.stopping_acc == None:  # For the base accuracy
                 self.stopping_acc = eval_accuracy
+                print(f"Stopping Accuracy: {self.stopping_acc * self.target_percent}")
 
             elif (
                 eval_accuracy < self.stopping_acc * self.target_percent
