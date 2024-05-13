@@ -62,7 +62,7 @@ def build_model_tokenizer(model_name, tok_name, dataset_name):
         save_dir = PR_WIKI
 
     elif dataset_name == SIB200:
-        model = AutoModelForMultipleChoice.from_pretrained(model_name)
+        model = AutoModelForSequenceClassification.from_pretrained(model_name)
         save_dir = PR_TOPP
 
     elif dataset_name == XNLI:
