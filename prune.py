@@ -140,11 +140,11 @@ def main(args):
             "validation"
         ]  # May need to be adjusted for each dataset
         arguments = build_trainer_args(args)
-        arguments.output_dir = f"{args.model}-{lang}"
 
         for seed in args.seed:
 
             model_c = deepcopy(model)  # Ensure the model is different every time
+            arguments.output_dir = f"{args.model}-{lang}-{seed}"
             arguments.seed = seed
             trainer = INCTrainer(
                 model=model_c,
