@@ -44,7 +44,6 @@ class AccuracyStoppingCallback(TrainerCallback):
                 eval_dataset=self._trainer.eval_dataset, metric_key_prefix="eval"
             )
 
-            print(f"Stopping Accuracy: {self.stopping_acc * self.target_percent}")
             eval_accuracy = eval_metrics["eval_accuracy"]
 
             if (
