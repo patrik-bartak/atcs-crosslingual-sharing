@@ -156,6 +156,8 @@ def main(args):
             out = trainer.evaluate(test_data, metric_key_prefix="eval")
             orig_acc = out["eval_accuracy"]
 
+            print(f"Original Accuracy: {orig_acc}")
+
             trainer.add_callback(
                 AccuracyStoppingCallback(trainer, orig_acc, args.target_percent)
             )
