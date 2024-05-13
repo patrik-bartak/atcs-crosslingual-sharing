@@ -67,7 +67,9 @@ def build_trainer_args(args):
         learning_rate=args.lr,
         no_cuda=not args.cuda,
         bf16=False,
-        max_steps=1 if args.test_run else args.max_steps,
+        max_steps=(
+            1 if args.test_run else (None if args.no_max_steps else args.max_steps)
+        ),
         seed=args.seed,
     )
 

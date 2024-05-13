@@ -88,6 +88,12 @@ def get_finetune_parser():
     )
 
     parser.add_argument(
+        "--no-max-steps",
+        action="store_true",
+        help="Whether we use max-steps at all",
+    )
+
+    parser.add_argument(
         "--max-steps",
         type=int,
         default=20,
