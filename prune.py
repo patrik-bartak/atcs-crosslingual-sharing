@@ -2,6 +2,7 @@
 # needing to find language specific subnetworks while also only using English for training)
 
 import numpy as np
+from math import ceil
 from copy import deepcopy
 from utils.dataset import *
 from utils.constants import *
@@ -139,6 +140,11 @@ def main(args):
         val_dataset = tok_dataset[
             "validation"
         ]  # May need to be adjusted for each dataset
+
+        # Need this part to align everything (the pruning happens every epoch (step))
+        step_base = ceil(len(val_dataset) / args.batch_size)
+        pruning_config.end_step = int(step_base * args.epochs)
+
         arguments = build_trainer_args(args)
 
         for seed in args.seed:
