@@ -104,7 +104,7 @@ def build_pruning_config(args):
         target_sparsity=0.3,  # So we can actually prune more (because the default is 0.9)
         pruning_type=args.type,
         start_step=1,
-        end_step=10,
+        end_step=50,
         pruning_scope="global",
         pruning_op_types=["Conv", "Linear", "Attention"],
         excluded_op_names=["roberta.embeddings"],  # Do not mask the embeddings
@@ -124,7 +124,6 @@ def main(args):
     for lang in lang_list:
 
         print(f"Pruning for Language: {lang}")
-        model_c = deepcopy(model)  # Ensure the model is different every time
         dataset = load_dataset(hf_dataset, lang)
         tok_dataset = dataset.map(
             partial(tokenize_fn, tokenizer=tokenizer),
@@ -146,6 +145,7 @@ def main(args):
 
         for seed in args.seed:
 
+            model_c = deepcopy(model)  # Ensure the model is different every time
             arguments.seed = seed
             trainer = INCTrainer(
                 model=model_c,
