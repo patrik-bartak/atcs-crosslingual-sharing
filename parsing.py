@@ -130,4 +130,11 @@ def get_finetune_parser():
         help="The percentage of the original performance to keep",
     )
 
+    parser.add_argument(
+        "--pattern",
+        type=str,
+        default="1x1",
+        help="The pruning pattern to use",
+    )
+
     return parser
