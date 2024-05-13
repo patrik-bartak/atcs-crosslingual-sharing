@@ -18,6 +18,13 @@ def get_finetune_parser():
     )
 
     parser.add_argument(
+        "--tokenizer",
+        type=str,
+        default=XML_R,
+        help="The identifier for the tokenizer to be used. Must be an existing HuggingFace tokenizer.",
+    )
+
+    parser.add_argument(
         "--savedir",
         type=str,
         default=None,

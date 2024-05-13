@@ -56,7 +56,7 @@ class AccuracyStoppingCallback(TrainerCallback):
             return control_copy
 
 
-def build_model_tokenizer(model_name, dataset_name):
+def build_model_tokenizer(model_name, tok_name, dataset_name):
     if dataset_name == WIKIANN:
         model = AutoModelForTokenClassification.from_pretrained(model_name)
         save_dir = PR_WIKI
@@ -78,7 +78,7 @@ def build_model_tokenizer(model_name, dataset_name):
     else:
         raise Exception(f"Dataset {dataset_name} not supported")
 
-    tokenizer = AutoTokenizer.from_pretrained(model_name)
+    tokenizer = AutoTokenizer.from_pretrained(tok_name)
     return model, tokenizer, save_dir
 
 
@@ -116,7 +116,9 @@ def build_pruning_config(args):
 
 def main(args):
     print(args)
-    model, tokenizer, save_dir = build_model_tokenizer(args.model, args.dataset)
+    model, tokenizer, save_dir = build_model_tokenizer(
+        args.model, args.tokenizer, args.dataset
+    )
 
     # Freeze the model parameters
     for param in model.parameters():
