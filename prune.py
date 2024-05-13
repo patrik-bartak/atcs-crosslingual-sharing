@@ -105,7 +105,7 @@ def build_pruning_config(args):
         pruning_op_types=["Conv", "Linear", "Attention"],
         excluded_op_names=["roberta.embeddings"],  # Do not mask the embeddings
         pattern=args.pattern,
-        pruning_frequency=1,
+        pruning_frequency=250,
         max_sparsity_ratio_per_op=1,  # To enable a component being completely sparse
     )
 
