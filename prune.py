@@ -1,7 +1,9 @@
-# The current pruning config is based off of Prasanna's method
+# The current pruning config is based off of Prasanna's method (with some adjustments due to
+# needing to find language specific subnetworks while also only using English for training)
 
 import numpy as np
 from copy import deepcopy
+from utils.dataset import *
 from utils.constants import *
 from datasets import load_metric
 from optimum.intel import INCTrainer
@@ -108,6 +110,7 @@ def build_pruning_config(args):
         min_sparsity_ratio_per_op=args.sparsity,
         max_sparsity_ratio_per_op=args.sparsity,
         pruning_scope="global",
+        excluded_op_names=["roberta.embeddings"],  # Do not mask the embeddings
     )
 
 
@@ -120,19 +123,41 @@ def main(args):
         param.requires_grad = False
 
     pruning_config = build_pruning_config(args)
-    _, val_dataset = build_dataset(args.dataset, tokenizer)
+    hf_dataset, lang_list, tokenize_fn = get_test_data(args.dataset)
     data_collator = get_data_collator(args.dataset, tokenizer)
-    trainer = INCTrainer(
-        model=model,
-        pruning_config=pruning_config,
-        args=build_trainer_args(args),
-        train_dataset=val_dataset,  # I assume we only ever use the dev dataset
-        eval_dataset=val_dataset,
-        data_collator=data_collator,
-    )
-    trainer.add_callback(AccuracyStoppingCallback(trainer, args.target_percent))
-    trainer.train()
-    trainer.save_model(save_dir)
+
+    for lang in lang_list:
+
+        print(f"Pruning for Language: {lang}")
+        model_c = deepcopy(model)  # Ensure the model is different every time
+        dataset = load_dataset(hf_dataset, lang)
+        tok_dataset = dataset.map(
+            partial(tokenize_fn, tokenizer=tokenizer),
+            batched=True,
+            num_proc=4,
+        )
+
+        # Need to create a label column for SIB200
+        if hf_dataset == SIB200:
+            # Map categories to labels
+            tok_dataset = tok_dataset.map(map_categories_to_labels)
+            tok_dataset = tok_dataset.remove_columns("category")
+
+        val_dataset = tok_dataset["val"]
+        trainer = INCTrainer(
+            model=model_c,
+            pruning_config=pruning_config,
+            args=build_trainer_args(args),
+            train_dataset=val_dataset,  # I assume we only ever use the dev dataset
+            eval_dataset=val_dataset,
+            data_collator=data_collator,
+        )
+
+        trainer.add_callback(AccuracyStoppingCallback(trainer, args.target_percent))
+        trainer.train()
+
+        save_dir = f"{args.savedir}/{lang}"
+        trainer.save_model(save_dir)
 
 
 if __name__ == "__main__":
