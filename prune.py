@@ -86,14 +86,13 @@ def build_trainer_args(args):
         per_device_eval_batch_size=args.batch_size,
         evaluation_strategy="epoch",
         save_strategy="epoch",
-        load_best_model_at_end=True,
         learning_rate=args.lr,
         no_cuda=not args.cuda,
         do_train=True,
         do_eval=True,
         bf16=False,
         max_steps=-1,
-        save_total_limit=3,
+        save_total_limit=7,
     )
 
 
