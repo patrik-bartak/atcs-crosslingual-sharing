@@ -1,7 +1,10 @@
 from functools import partial
-from utils.constants import *
+
 from datasets import load_dataset
-from transformers import DataCollatorForTokenClassification, DataCollatorWithPadding
+from transformers import (DataCollatorForTokenClassification,
+                          DataCollatorWithPadding)
+
+from utils.constants import *
 
 
 # Function to map categories to labels
@@ -68,7 +71,12 @@ def tokenize_wikiann(rows, tokenizer):
 
 
 def tokenize_marc(rows, tokenizer):
-    return tokenizer(row['review_body'], row['review_title'], row['product_category'], return_special_tokens_mask=True)
+    return tokenizer(
+        rows["review_body"],
+        rows["review_title"],
+        rows["product_category"],
+        return_special_tokens_mask=True,
+    )
 
 
 def build_dataset(hf_dataset, tokenizer):

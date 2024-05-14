@@ -1,4 +1,5 @@
 import argparse
+
 from utils.constants import *
 
 
@@ -18,7 +19,7 @@ def get_finetune_parser():
     )
 
     parser.add_argument(
-        "--batch-size",
+        "--batch_size",
         type=int,
         default=1,
         help="The batch size to be used for training.",
@@ -39,7 +40,7 @@ def get_finetune_parser():
     )
 
     parser.add_argument(
-        "--log-dir",
+        "--log_dir",
         type=str,
         default="logs",
         help="The directory where the logs will be saved.",
@@ -76,7 +77,7 @@ def get_finetune_parser():
     parser.add_argument(
         "--max_steps",
         type=int,
-        default=20,
+        default=-1,
         help="Maximum number of training steps",
     )
 

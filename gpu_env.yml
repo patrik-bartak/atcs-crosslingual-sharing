@@ -21,3 +21,4 @@ dependencies:
     - matplotlib>=3.4.3
     - numpy==1.23.1
     - "optimum[neural-compressor]"
+    - evaluate==0.4.2
