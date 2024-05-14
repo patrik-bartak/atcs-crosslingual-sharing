@@ -171,7 +171,7 @@ def main(args):
         for seed in args.seed:
 
             model_c = deepcopy(model)  # Ensure the model is different every time
-            output_dir = f"{args.model}-{lang}-{seed}"
+            output_dir = f"{args.model}-{lang}-{seed}-{args.type}"
             arguments.seed = seed
             trainer = INCTrainer(
                 model=model_c,
