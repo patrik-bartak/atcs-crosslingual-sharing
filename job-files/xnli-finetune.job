@@ -16,6 +16,8 @@ module load Anaconda3/2023.07-2
 
 # Activate your environment
 source activate acts_xling_gpu_env
+pip install seqeval
+pip install evaluate
 
 # Run code
 bash job-files/xnli-finetune.sh
