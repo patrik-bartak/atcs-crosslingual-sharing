@@ -197,14 +197,10 @@ def main(args):
             )
             trainer.train()
 
-            save_dir = f"{args.savedir}/{seed}/{lang}"
-
             out_c = trainer.evaluate(val_dataset, metric_key_prefix="eval")
             curr_acc = out_c["eval_accuracy"]
 
             print(f"Current Accuracy: {curr_acc}")
-
-            trainer.save_model(save_dir)
 
 
 if __name__ == "__main__":
