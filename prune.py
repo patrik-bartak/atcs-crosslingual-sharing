@@ -56,7 +56,7 @@ def build_model_tokenizer(model_name, dataset_name):
         model = AutoModelForSequenceClassification.from_pretrained(model_name)
         save_dir = PR_XNLI
 
-    elif dataset_name == MQA:
+    elif dataset_name == MARC:
         model = AutoModelForMultipleChoice.from_pretrained(
             model_name
         )  # I assume this one is what we need

@@ -67,8 +67,8 @@ def tokenize_wikiann(rows, tokenizer):
     return tokenize_and_align_labels(rows, tokenizer)
 
 
-def tokenize_mqa(rows, tokenizer):
-    return tokenizer(NotImplemented, return_special_tokens_mask=True)
+def tokenize_marc(rows, tokenizer):
+    return tokenizer(row['review_body'], row['review_title'], row['product_category'], return_special_tokens_mask=True)
 
 
 def build_dataset(hf_dataset, tokenizer):
@@ -83,10 +83,10 @@ def build_dataset(hf_dataset, tokenizer):
     elif hf_dataset == WIKIANN:
         dataset = load_dataset(WIKIANN, "en")
         tokenize_fn = tokenize_wikiann
-    elif hf_dataset == MQA:
+    elif hf_dataset == MARC:
         # TODO: load the correct data language subset
-        dataset = load_dataset(MQA)
-        tokenize_fn = tokenize_mqa
+        dataset = load_dataset(MARC)
+        tokenize_fn = tokenize_marc
     else:
         raise Exception(f"Dataset {hf_dataset} not supported")
 

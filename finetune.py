@@ -24,7 +24,7 @@ def build_model_tokenizer(hf_model_id, dataset_name):
             hf_model_id, num_labels=7
         )  # Seven different categories
 
-    elif dataset_name == MQA:
+    elif dataset_name == MARC:
         return NotImplemented
 
     else:
