@@ -75,7 +75,7 @@ class AccuracyStoppingCallback(TrainerCallback):
 
             else:  # Else we save the second best checkpoint manually (not possible with default classes)
 
-                current_sparsity = ((state.global_step - 2) // self.interval) * 0.5
+                current_sparsity = ((state.global_step - 2) // self.interval) * 0.05
                 trainer_state = {
                     "sparsity": current_sparsity,
                     "accuracy": eval_accuracy,
