@@ -64,7 +64,11 @@ class AccuracyStoppingCallback(TrainerCallback):
             eval_metrics = self._trainer.evaluate(
                 eval_dataset=self._trainer.eval_dataset, metric_key_prefix="eval"
             )
+
             eval_accuracy = eval_metrics["eval_accuracy"]
+            current_sparsity = ((state.global_step - 2) // self.interval) * 0.05
+            self.acc_list.append(eval_accuracy)
+            self.spar_list.append(current_sparsity)
 
             if (
                 eval_accuracy < self.stopping_acc * self.target_percent
@@ -77,9 +81,6 @@ class AccuracyStoppingCallback(TrainerCallback):
 
             else:  # Else we save the second best checkpoint manually (not possible with default classes)
 
-                current_sparsity = ((state.global_step - 2) // self.interval) * 0.05
-                self.acc_list.append(eval_accuracy)
-                self.spar_list.append(current_sparsity)
                 trainer_state = {
                     "sparsity": current_sparsity,
                     "accuracy": eval_accuracy,
