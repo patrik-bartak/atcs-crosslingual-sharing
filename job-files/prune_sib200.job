@@ -1,0 +1,37 @@
+#!/bin/bash
+
+#SBATCH --partition=gpu
+#SBATCH --gres=gpu:1
+#SBATCH --cpus-per-task=9
+#SBATCH --gpus=1
+#SBATCH --job-name=sibpr
+#SBATCH --ntasks=1
+#SBATCH --time=04:00:00
+#SBATCH --mem=32000M
+#SBATCH --output=job_outs/sibpr_%A.out
+
+module purge
+module load 2023
+module load Anaconda3/2023.07-2
+
+# Activate the environment
+source activate acts_xling_gpu_env
+
+# Run the code
+file_dir=$HOME/atcs-crosslingual-sharing
+modeldir=$file_dir/ft_models/sib200ft
+savedir=$file_dir/pruned_models/sib200pr
+ckpt_dir=$file_dir/checkpoints
+log_dir=$file_dir/logs
+srun python -u $file_dir/prune.py \
+    --model $modeldir \
+    --savedir $savedir \
+    --dataset "Davlan/sib200" \
+    --checkpts $ckpt_dir \
+    --log-dir $log_dir \
+    --batch-size 16 \
+    --lr 0 \
+    --epochs 10 \
+    --no-max-steps \
+    --seed 41 42 43 \
+    --type "magnitude"
