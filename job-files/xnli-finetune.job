@@ -6,7 +6,7 @@
 #SBATCH --gpus=1
 #SBATCH --job-name=xnli-finetune
 #SBATCH --ntasks=1
-#SBATCH --time=02:00:00
+#SBATCH --time=04:00:00
 #SBATCH --mem=32000M
 #SBATCH --output=job_outs/xnli-finetune_%A.out
 
