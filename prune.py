@@ -70,6 +70,17 @@ class AccuracyStoppingCallback(TrainerCallback):
             self.acc_list.append(eval_accuracy)
             self.spar_list.append(current_sparsity)
 
+            trainer_state = {
+                "sparsity": current_sparsity,
+                "accuracy": eval_accuracy,
+                "spar_progression": self.spar_list,
+                "acc_progression": self.acc_list,
+                "configs": self._trainer.args.to_json_string(),
+            }
+
+            with open(self.state_savedir, "w") as outfile:
+                json.dump(trainer_state, outfile, indent=2)
+
             if (
                 eval_accuracy < self.stopping_acc * self.target_percent
             ):  # To ensure the accuracy stays within the target range
@@ -81,18 +92,7 @@ class AccuracyStoppingCallback(TrainerCallback):
 
             else:  # Else we save the second best checkpoint manually (not possible with default classes)
 
-                trainer_state = {
-                    "sparsity": current_sparsity,
-                    "accuracy": eval_accuracy,
-                    "spar_progression": self.spar_list,
-                    "acc_progression": self.acc_list,
-                    "configs": self._trainer.args.to_json_string(),
-                }
-
                 torch.save(self._trainer.model, self.model_savedir)
-                with open(self.state_savedir, "w") as outfile:
-                    json.dump(trainer_state, outfile, indent=2)
-
                 print(
                     f"\nCurrent Evaluation Accuracy: {round(eval_accuracy, 4)} | Step: {state.global_step}"
                 )
