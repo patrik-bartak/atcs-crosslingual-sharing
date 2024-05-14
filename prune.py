@@ -1,6 +1,7 @@
 # The current pruning config is based off of Prasanna's method (with some adjustments due to
 # needing to find language specific subnetworks while also only using English for training)
 
+import os
 import torch
 import numpy as np
 from math import ceil
@@ -43,6 +44,9 @@ class AccuracyStoppingCallback(TrainerCallback):
         # For saving
         self.model_savedir = f"{savedir}/model.pt"
         self.state_savedir = f"{savedir}/state.pt"
+
+        # Ensure savedir exists
+        os.makedirs(savedir, exist_ok=True)
 
     def on_epoch_end(self, args, state, control, **kwargs):
         if control.should_evaluate:
@@ -110,8 +114,6 @@ def build_trainer_args(args):
         do_eval=True,
         bf16=False,
         max_steps=-1,
-        save_total_limit=2,
-        save_only_model=True,
     )
 
 
@@ -162,14 +164,14 @@ def main(args):
         # Need this part to align everything (the pruning happens every epoch (step))
         step_base = ceil(len(val_dataset) / args.batch_size)
         pruning_config.end_step = int(step_base * args.epochs) + 1
-        print(pruning_config.end_step)
+        print("End Step:", pruning_config.end_step)
 
         arguments = build_trainer_args(args)
 
         for seed in args.seed:
 
             model_c = deepcopy(model)  # Ensure the model is different every time
-            arguments.output_dir = f"{args.model}-{lang}-{seed}"
+            output_dir = f"{args.model}-{lang}-{seed}"
             arguments.seed = seed
             trainer = INCTrainer(
                 model=model_c,
@@ -190,7 +192,7 @@ def main(args):
 
             trainer.add_callback(
                 AccuracyStoppingCallback(
-                    trainer, orig_acc, args.target_percent, arguments.output_dir
+                    trainer, orig_acc, args.target_percent, output_dir
                 )
             )
             trainer.train()
