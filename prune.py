@@ -1,6 +1,7 @@
 # The current pruning config is based off of Prasanna's method (with some adjustments due to
 # needing to find language specific subnetworks while also only using English for training)
 
+import torch
 import numpy as np
 from math import ceil
 from copy import deepcopy
@@ -32,11 +33,16 @@ def compute_metrics(eval_pred):
 
 # Need to adjust this more
 class AccuracyStoppingCallback(TrainerCallback):
-    def __init__(self, trainer, original_acc, target_percent) -> None:
+    def __init__(self, trainer, original_acc, target_percent, savedir) -> None:
         super().__init__()
+
         self._trainer = trainer
         self.stopping_acc = original_acc
         self.target_percent = target_percent
+
+        # For saving
+        self.model_savedir = f"{savedir}/model.pt"
+        self.state_savedir = f"{savedir}/state.pt"
 
     def on_epoch_end(self, args, state, control, **kwargs):
         if control.should_evaluate:
@@ -50,8 +56,20 @@ class AccuracyStoppingCallback(TrainerCallback):
                 eval_accuracy < self.stopping_acc * self.target_percent
             ):  # To ensure the accuracy stays within the target range
 
-                print("Stopping Training...")
+                print(
+                    f"Accuracy below {self.stopping_acc * self.target_percent}. Stopping Training..."
+                )
                 control.should_training_stop = True
+
+            else:  # Else we save the second best checkpoint manually (not possible with default classes)
+
+                trainer_state = {
+                    "step": self._trainer.state.step,
+                    "configs": self._trainer.args.to_json_string(),
+                }
+
+                torch.save(self._trainer.model, self.model_savedir)
+                torch.save(trainer_state, self.state_savedir)
 
             return control
 
@@ -85,7 +103,7 @@ def build_trainer_args(args):
         per_device_train_batch_size=args.batch_size,
         per_device_eval_batch_size=args.batch_size,
         evaluation_strategy="epoch",
-        save_strategy="epoch",
+        save_strategy="no",
         learning_rate=args.lr,
         no_cuda=not args.cuda,
         do_train=True,
@@ -143,7 +161,8 @@ def main(args):
 
         # Need this part to align everything (the pruning happens every epoch (step))
         step_base = ceil(len(val_dataset) / args.batch_size)
-        pruning_config.end_step = int(step_base * args.epochs)
+        pruning_config.end_step = int(step_base * args.epochs) + 1
+        print(pruning_config.end_step)
 
         arguments = build_trainer_args(args)
 
@@ -170,7 +189,9 @@ def main(args):
             print(f"Original Accuracy: {orig_acc}")
 
             trainer.add_callback(
-                AccuracyStoppingCallback(trainer, orig_acc, args.target_percent)
+                AccuracyStoppingCallback(
+                    trainer, orig_acc, args.target_percent, arguments.output_dir
+                )
             )
             trainer.train()
 
