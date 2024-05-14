@@ -49,6 +49,7 @@ def build_trainer_args(args):
         load_best_model_at_end=True,
         learning_rate=args.lr,
         no_cuda=not args.cuda,
+        use_cpu=not args.cuda,
         bf16=False,
         max_steps=1 if args.test_run else args.max_steps,
     )
@@ -73,6 +74,8 @@ def main(args):
     data_collator = get_data_collator(args.dataset, tokenizer)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Using device: {device}")
+    if device == "cpu":
+        raise Exception("Should not train on CPU")
     trainer = Trainer(
         model=model,
         args=build_trainer_args(args),
