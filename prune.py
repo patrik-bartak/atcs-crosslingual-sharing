@@ -75,6 +75,8 @@ class AccuracyStoppingCallback(TrainerCallback):
                 torch.save(self._trainer.model, self.model_savedir)
                 torch.save(trainer_state, self.state_savedir)
 
+                print(f"Model saved to {self.model_savedir}!\n")
+
             return control
 
 
