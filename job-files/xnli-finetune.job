@@ -4,11 +4,11 @@
 #SBATCH --gres=gpu:1
 #SBATCH --cpus-per-task=9
 #SBATCH --gpus=1
-#SBATCH --job-name=meaneval
+#SBATCH --job-name=xnli-finetune
 #SBATCH --ntasks=1
 #SBATCH --time=02:00:00
 #SBATCH --mem=32000M
-#SBATCH --output=job_outs/meaneval_%A.out
+#SBATCH --output=job_outs/xnli-finetune_%A.out
 
 module purge
 module load 2023
