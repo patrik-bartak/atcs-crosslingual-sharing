@@ -163,7 +163,7 @@ def main(args):
 
         # Need this part to align everything (the pruning happens every epoch (step))
         step_base = ceil(len(val_dataset) / args.batch_size)
-        pruning_config.end_step = int(step_base * args.epochs) + 1
+        pruning_config.end_step = int(2 * step_base * args.epochs) + 1
         print("End Step:", pruning_config.end_step)
 
         arguments = build_trainer_args(args)
