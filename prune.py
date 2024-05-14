@@ -64,7 +64,7 @@ class AccuracyStoppingCallback(TrainerCallback):
             else:  # Else we save the second best checkpoint manually (not possible with default classes)
 
                 trainer_state = {
-                    "step": self._trainer.state.step,
+                    "step": self._trainer.state.global_step,
                     "configs": self._trainer.args.to_json_string(),
                 }
 
