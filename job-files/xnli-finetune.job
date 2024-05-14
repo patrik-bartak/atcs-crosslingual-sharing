@@ -18,6 +18,7 @@ module load Anaconda3/2023.07-2
 source activate acts_xling_gpu_env
 pip install seqeval
 pip install evaluate
+pip install --upgrade datasets pyarrow transformers
 
 # Run code
 bash job-files/xnli-finetune.sh
