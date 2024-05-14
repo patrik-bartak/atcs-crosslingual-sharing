@@ -46,6 +46,8 @@ class AccuracyStoppingCallback(TrainerCallback):
         self.target_percent = target_percent
 
         # For saving
+        self.acc_list = []
+        self.spar_list = []
         self.model_savedir = f"{savedir}/model.pt"
         self.state_savedir = f"{savedir}/state.json"
 
@@ -76,9 +78,13 @@ class AccuracyStoppingCallback(TrainerCallback):
             else:  # Else we save the second best checkpoint manually (not possible with default classes)
 
                 current_sparsity = ((state.global_step - 2) // self.interval) * 0.05
+                self.acc_list.append(eval_accuracy)
+                self.spar_list.append(current_sparsity)
                 trainer_state = {
                     "sparsity": current_sparsity,
                     "accuracy": eval_accuracy,
+                    "spar_progression": self.spar_list,
+                    "acc_progression": self.acc_list,
                     "configs": self._trainer.args.to_json_string(),
                 }
 
