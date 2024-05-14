@@ -2,6 +2,7 @@
 # needing to find language specific subnetworks while also only using English for training)
 
 import os
+import json
 import torch
 import numpy as np
 from math import ceil
@@ -32,28 +33,35 @@ def compute_metrics(eval_pred):
     return metric.compute(predictions=predictions, references=labels)
 
 
-# Need to adjust this more
+# We require a custom callback to evaluate at the right times
 class AccuracyStoppingCallback(TrainerCallback):
-    def __init__(self, trainer, original_acc, target_percent, savedir) -> None:
+    def __init__(
+        self, trainer, original_acc, target_percent, savedir, interval
+    ) -> None:
         super().__init__()
 
         self._trainer = trainer
+        self.interval = interval
         self.stopping_acc = original_acc
         self.target_percent = target_percent
 
         # For saving
         self.model_savedir = f"{savedir}/model.pt"
-        self.state_savedir = f"{savedir}/state.pt"
+        self.state_savedir = f"{savedir}/state.json"
 
         # Ensure savedir exists
         os.makedirs(savedir, exist_ok=True)
 
-    def on_epoch_end(self, args, state, control, **kwargs):
-        if control.should_evaluate:
+    def on_step_end(self, args, state, control, **kwargs):
+        # Force the evaluation to happen at specific intervals based on the number of
+        # batches per epoch (unfortunately has to be done due to limitations with neural-compressor)
+        if ((state.global_step - 2) % self.interval == 0) and (
+            (state.global_step - 2) > 0
+        ):
+
             eval_metrics = self._trainer.evaluate(
                 eval_dataset=self._trainer.eval_dataset, metric_key_prefix="eval"
             )
-
             eval_accuracy = eval_metrics["eval_accuracy"]
 
             if (
@@ -61,20 +69,26 @@ class AccuracyStoppingCallback(TrainerCallback):
             ):  # To ensure the accuracy stays within the target range
 
                 print(
-                    f"Accuracy below {self.stopping_acc * self.target_percent}. Stopping Training..."
+                    f"\nAccuracy below {round(self.stopping_acc * self.target_percent, 4)}. Stopping Training...\n"
                 )
                 control.should_training_stop = True
 
             else:  # Else we save the second best checkpoint manually (not possible with default classes)
 
+                current_sparsity = ((state.global_step - 2) // self.interval) * 0.5
                 trainer_state = {
-                    "step": self._trainer.state.global_step,
+                    "sparsity": current_sparsity,
+                    "accuracy": eval_accuracy,
                     "configs": self._trainer.args.to_json_string(),
                 }
 
                 torch.save(self._trainer.model, self.model_savedir)
-                torch.save(trainer_state, self.state_savedir)
+                with open(self.state_savedir, "w") as outfile:
+                    json.dump(trainer_state, outfile, indent=2)
 
+                print(
+                    f"\nCurrent Evaluation Accuracy: {round(eval_accuracy, 4)} | Step: {state.global_step}"
+                )
                 print(f"Model saved to {self.model_savedir}!\n")
 
             return control
@@ -108,24 +122,23 @@ def build_trainer_args(args):
         num_train_epochs=args.epochs,
         per_device_train_batch_size=args.batch_size,
         per_device_eval_batch_size=args.batch_size,
-        evaluation_strategy="epoch",
+        evaluation_strategy="no",
         save_strategy="no",
         learning_rate=args.lr,
         no_cuda=not args.cuda,
         do_train=True,
-        do_eval=True,
+        do_eval=False,
         bf16=False,
         max_steps=-1,
     )
 
 
-# Might need to specify excluded layers (i.e., embeddings)
-def build_pruning_config(args):
+def build_pruning_config(args, interval):
     return WeightPruningConfig(
         target_sparsity=0.5,  # So we can actually prune more (because the default is 0.5)
         pruning_type=args.type,
         start_step=1,
-        end_step=51,
+        end_step=int(args.epochs * interval) + 1,
         pruning_scope="global",
         pruning_op_types=["Conv", "Linear", "Attention"],
         excluded_op_names=["roberta.embeddings"],  # Do not mask the embeddings
@@ -139,7 +152,6 @@ def build_pruning_config(args):
 def main(args):
     print(args)
     model, tokenizer = build_model_tokenizer(args.model, args.tokenizer, args.dataset)
-    pruning_config = build_pruning_config(args)
     hf_dataset, lang_list, tokenize_fn = get_test_data(args.dataset)
     data_collator = get_data_collator(args.dataset, tokenizer)
 
@@ -164,16 +176,14 @@ def main(args):
         ]  # May need to be adjusted for each dataset
 
         # Need this part to align everything (the pruning happens every epoch (step))
-        step_base = ceil(len(val_dataset) / args.batch_size)
-        pruning_config.end_step = int(2 * step_base * args.epochs) + 1
-        print("End Step:", pruning_config.end_step)
-
+        interval = ceil(len(val_dataset) / args.batch_size)
+        pruning_config = build_pruning_config(args, interval)
         arguments = build_trainer_args(args)
 
         for seed in args.seed:
 
             model_c = deepcopy(model)  # Ensure the model is different every time
-            output_dir = f"{args.savedir}/{args.model}-{lang}-{seed}-{args.type}"
+            output_dir = f"{args.savedir}/{args.type}-{lang}-{seed}"
             arguments.seed = seed
             trainer = INCTrainer(
                 model=model_c,
@@ -194,7 +204,7 @@ def main(args):
 
             trainer.add_callback(
                 AccuracyStoppingCallback(
-                    trainer, orig_acc, args.target_percent, output_dir
+                    trainer, orig_acc, args.target_percent, output_dir, interval
                 )
             )
             trainer.train()
