@@ -1,3 +1,4 @@
+import torch
 from transformers import (AutoModelForSequenceClassification,
                           AutoModelForTokenClassification, AutoTokenizer,
                           Trainer, TrainingArguments)
@@ -70,6 +71,8 @@ def main(args):
     train_dataset, val_dataset = build_dataset(args.dataset, tokenizer)
     print(f"Dset sizes (train/val): ({len(train_dataset)}/{len(val_dataset)})")
     data_collator = get_data_collator(args.dataset, tokenizer)
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    print(f"Using device: {device}")
     trainer = Trainer(
         model=model,
         args=build_trainer_args(args),
