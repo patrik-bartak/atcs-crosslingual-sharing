@@ -60,7 +60,7 @@ def build_model_tokenizer(model_name, dataset_name):
         model = AutoModelForMultipleChoice.from_pretrained(
             model_name
         )  # I assume this one is what we need
-        save_dir = PR_MQNA
+        save_dir = PR_MARC
 
     else:
         raise Exception(f"Dataset {dataset_name} not supported")

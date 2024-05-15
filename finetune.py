@@ -25,7 +25,7 @@ def build_model_tokenizer(hf_model_id, dataset_name):
         )  # Seven different categories
 
     elif dataset_name == MARC:
-        return NotImplemented
+        model = AutoModelForSequenceClassification.from_pretrained(hf_model_id, num_labels=7)
 
     else:
         raise Exception(f"Dataset {dataset_name} not supported")

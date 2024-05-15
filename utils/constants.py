@@ -7,7 +7,7 @@ XML_R = "FacebookAI/xlm-roberta-base"
 XNLI = "xnli"
 SIB200 = "Davlan/sib200"
 WIKIANN = "wikiann"
-MARC = "clips/marc"
+MARC = "marc"
 
 # Directory of pruned models:
 PR_WIKI = "/pruned_models/WikiAnn"
