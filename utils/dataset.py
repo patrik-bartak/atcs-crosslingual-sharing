@@ -154,6 +154,9 @@ def build_dataset(hf_dataset, tokenizer):
         dataset = load_dataset(SIB200, "eng_Latn")
         tokenize_fn = tokenize_sib200
 
+    elif hf_dataset == WIKIANN:
+        raise Exception(f"Use the build_dataset_wikiann func for {hf_dataset}")
+
     elif hf_dataset == MARC:
         # TODO: load the correct data language subset
         dataset = load_dataset(MARC)
