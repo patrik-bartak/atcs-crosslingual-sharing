@@ -160,6 +160,7 @@ def build_dataset(hf_dataset, tokenizer):
         tokenize_fn = tokenize_wikiann
 
     elif hf_dataset == MARC:
+        # TODO: load the correct data language subset
         dataset = load_dataset(MARC)
         tokenize_fn = tokenize_marc
     else:
