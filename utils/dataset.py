@@ -154,10 +154,10 @@ def build_dataset(hf_dataset, tokenizer):
         dataset = load_dataset(SIB200, "eng_Latn")
         tokenize_fn = tokenize_sib200
 
-    elif hf_dataset == MQA:
+    elif hf_dataset == MARC:
         # TODO: load the correct data language subset
-        dataset = load_dataset(MQA)
-        tokenize_fn = tokenize_mqa
+        dataset = load_dataset(MARC)
+        tokenize_fn = tokenize_marc
     else:
         raise Exception(f"Dataset {hf_dataset} not supported")
 
