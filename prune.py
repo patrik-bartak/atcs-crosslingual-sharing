@@ -4,7 +4,6 @@
 import os
 import json
 import torch
-import numpy as np
 from math import ceil
 from copy import deepcopy
 from utils.dataset import *
