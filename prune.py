@@ -23,15 +23,6 @@ from transformers import (
     TrainerCallback,
 )
 
-# For getting the accuracy
-metric = load_metric("accuracy", trust_remote_code=True)
-
-
-def compute_metrics(eval_pred):
-    logits, labels = eval_pred
-    predictions = np.argmax(logits, axis=-1)
-    return metric.compute(predictions=predictions, references=labels)
-
 
 # We require a custom callback to evaluate at the right times
 class AccuracyStoppingCallback(TrainerCallback):
@@ -101,26 +92,30 @@ class AccuracyStoppingCallback(TrainerCallback):
             return control
 
 
-def build_model_tokenizer(model_name, tok_name, dataset_name):
+def build_model_tokenizer_metric(model_name, tok_name, dataset_name):
     if dataset_name == WIKIANN:
         model = AutoModelForTokenClassification.from_pretrained(model_name)
+        metric = None  # TODO: Implement
 
     elif dataset_name == SIB200:
         model = AutoModelForSequenceClassification.from_pretrained(model_name)
+        metric = compute_acc
 
     elif dataset_name == XNLI:
         model = AutoModelForSequenceClassification.from_pretrained(model_name)
+        metric = compute_acc  # TODO: Check if correct
 
     elif dataset_name == MQA:
         model = AutoModelForMultipleChoice.from_pretrained(
             model_name
         )  # I assume this one is what we need
+        metric = None  # TODO: Implement
 
     else:
         raise Exception(f"Dataset {dataset_name} not supported")
 
     tokenizer = AutoTokenizer.from_pretrained(tok_name)
-    return model, tokenizer
+    return model, tokenizer, metric
 
 
 def build_trainer_args(args):
@@ -158,7 +153,9 @@ def build_pruning_config(args, interval):
 
 def main(args):
     print(args)
-    model, tokenizer = build_model_tokenizer(args.model, args.tokenizer, args.dataset)
+    model, tokenizer, metric = build_model_tokenizer_metric(
+        args.model, args.tokenizer, args.dataset
+    )
     hf_dataset, lang_list, tokenize_fn = get_test_data(args.dataset)
     data_collator = get_data_collator(args.dataset, tokenizer)
 
@@ -199,7 +196,7 @@ def main(args):
                 train_dataset=val_dataset,  # I assume we only ever use the dev dataset
                 eval_dataset=val_dataset,
                 data_collator=data_collator,
-                compute_metrics=compute_metrics,
+                compute_metrics=metric,
             )
 
             # To get the accuracy on the test

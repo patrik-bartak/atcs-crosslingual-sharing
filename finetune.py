@@ -10,27 +10,19 @@ from transformers import (
 
 from utils.dataset import *
 from utils.constants import *
-from datasets import load_metric
 from parsing import get_finetune_parser
 
 
-# For getting the accuracy
-metric = load_metric("accuracy", trust_remote_code=True)
-
-
-def compute_metrics(eval_pred):
-    logits, labels = eval_pred
-    predictions = np.argmax(logits, axis=-1)
-    return metric.compute(predictions=predictions, references=labels)
-
-
-def build_model_tokenizer(hf_model_id, dataset_name):
+def build_model_tokenizer_metric(hf_model_id, dataset_name):
     if dataset_name == WIKIANN:
         model = AutoModelForTokenClassification.from_pretrained(
             hf_model_id, num_labels=7  # From 0 to 6
         )
+        metric = None  # TODO: Implement
 
     elif dataset_name == XNLI:
+        model = None  # TODO: Implement
+        metric = compute_acc
         return NotImplemented
 
     elif dataset_name == SIB200:
@@ -43,6 +35,7 @@ def build_model_tokenizer(hf_model_id, dataset_name):
         model = AutoModelForSequenceClassification.from_pretrained(
             hf_model_id, config=config
         )  # Seven different categories
+        metric = compute_acc
 
     elif dataset_name == MQA:
         return NotImplemented
@@ -51,7 +44,7 @@ def build_model_tokenizer(hf_model_id, dataset_name):
         raise Exception(f"Dataset {dataset_name} not supported")
 
     tokenizer = AutoTokenizer.from_pretrained(hf_model_id)
-    return model, tokenizer
+    return model, tokenizer, metric
 
 
 def build_trainer_args(args):
@@ -76,7 +69,7 @@ def build_trainer_args(args):
 
 def main(args):
     print(args)
-    model, tokenizer = build_model_tokenizer(args.model, args.dataset)
+    model, tokenizer, metric = build_model_tokenizer_metric(args.model, args.dataset)
     train_dataset, val_dataset = build_dataset(args.dataset, tokenizer)
     data_collator = get_data_collator(args.dataset, tokenizer)
     trainer = Trainer(
@@ -85,7 +78,7 @@ def main(args):
         train_dataset=train_dataset,
         eval_dataset=val_dataset,
         data_collator=data_collator,
-        compute_metrics=compute_metrics,
+        compute_metrics=metric,
     )
 
     trainer.train()

@@ -1,7 +1,17 @@
+import numpy as np
 from functools import partial
 from utils.constants import *
-from datasets import load_dataset
+from datasets import load_dataset, load_metric
 from transformers import DataCollatorForTokenClassification, DataCollatorWithPadding
+
+# For getting the metrics
+metric_acc = load_metric("accuracy", trust_remote_code=True)
+
+
+def compute_acc(eval_pred):
+    logits, labels = eval_pred
+    predictions = np.argmax(logits, axis=-1)
+    return metric_acc.compute(predictions=predictions, references=labels)
 
 
 # Function to map categories to labels
