@@ -89,23 +89,38 @@ def get_test_data(hf_dataset):
 # For evaluating per language
 def test_model(trainer, tokenizer, hf_dataset, lang_list, tokenize_fn):
 
-    for lang in lang_list:
-        dataset = load_dataset(hf_dataset, lang)
-        tok_dataset = dataset.map(
-            partial(tokenize_fn, tokenizer=tokenizer),
-            batched=True,
-            num_proc=4,
-        )
+    if hf_dataset == WIKIANN:
+        for lang in lang_list:
+            dataset = load_dataset(hf_dataset, lang)
+            tok_dataset = dataset.map(
+                partial(tokenize_fn, tokenizer=tokenizer),
+                batched=True,
+                remove_columns=dataset["train"].column_names,
+                num_proc=4)
+            
+            test_data = tok_dataset["test"]
+            out = trainer.evaluate(test_data, metric_key_prefix="test")
+            print(f"Results for Language '{lang}':")
+            print(out, "\n")
+    
+    else:    
+        for lang in lang_list:
+            dataset = load_dataset(hf_dataset, lang)
+            tok_dataset = dataset.map(
+                partial(tokenize_fn, tokenizer=tokenizer),
+                batched=True,
+                num_proc=4,
+            )
 
-        # Need to create a label column for SIB200
-        if hf_dataset == SIB200:
-            # Map categories to labels
-            tok_dataset = tok_dataset.map(map_categories_to_labels)
+            # Need to create a label column for SIB200
+            if hf_dataset == SIB200:
+                # Map categories to labels
+                tok_dataset = tok_dataset.map(map_categories_to_labels)
 
-        test_data = tok_dataset["test"]
-        out = trainer.evaluate(test_data, metric_key_prefix="test")
-        print(f"Results for Language '{lang}':")
-        print(out, "\n")
+            test_data = tok_dataset["test"]
+            out = trainer.evaluate(test_data, metric_key_prefix="test")
+            print(f"Results for Language '{lang}':")
+            print(out, "\n")
 
 
 

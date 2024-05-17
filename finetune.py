@@ -19,12 +19,9 @@ metric = load_metric("accuracy", trust_remote_code=True)
 
 
 def compute_metrics(eval_pred):
-    predictions, labels = eval_pred
-    # Assuming your model outputs logits
-    predictions = np.argmax(predictions, axis=1)
-    # If labels are one-hot encoded, convert them to categorical labels
-    labels = np.argmax(labels, axis=1)
-    return {"accuracy": (predictions == labels).mean()}
+    logits, labels = eval_pred
+    predictions = np.argmax(logits, axis=-1)
+    return metric.compute(predictions=predictions, references=labels)
 
 
 def get_ner_metrics(eval_preds):
@@ -106,7 +103,9 @@ def build_trainer_args(args):
         learning_rate=args.lr,
         no_cuda=not args.cuda,
         bf16=False,
-        max_steps=1 if args.test_run else args.max_steps,
+        max_steps=(
+            1 if args.test_run else (-1 if args.no_max_steps else args.max_steps)
+        ),
         seed=args.seed,
     )
 
