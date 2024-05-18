@@ -1,19 +1,17 @@
 # The current pruning config is based off of Prasanna's method
 
 from copy import deepcopy
-from utils.constants import *
-from optimum.intel import INCTrainer
-from parsing import get_finetune_parser
+
 from neural_compressor import WeightPruningConfig
+from optimum.intel import INCTrainer
+from transformers import (AutoModelForMultipleChoice,
+                          AutoModelForSequenceClassification,
+                          AutoModelForTokenClassification, AutoTokenizer,
+                          TrainerCallback, TrainingArguments)
+
+from parsing import get_finetune_parser
+from utils.constants import *
 from utils.dataset import build_dataset, get_data_collator
-from transformers import (
-    AutoModelForSequenceClassification,
-    AutoModelForTokenClassification,
-    AutoModelForMultipleChoice,
-    AutoTokenizer,
-    TrainingArguments,
-    TrainerCallback,
-)
 
 
 # Need to adjust this more
