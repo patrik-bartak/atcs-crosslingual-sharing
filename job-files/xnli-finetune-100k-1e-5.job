@@ -23,4 +23,4 @@ pip install accelerate -U
 pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
 
 # Run code
-bash job-files/xnli-finetune.sh
+bash job-files/xnli-finetune-100k-1e-5.sh

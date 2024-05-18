@@ -6,7 +6,7 @@
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=6
 #SBATCH --time=00:30:00
-#SBATCH --output=job_outs/install_env_%A.out
+#SBATCH --output=job_outs_old/install_env_%A.out
 
 module purge
 module load 2023

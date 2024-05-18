@@ -9,6 +9,10 @@ SIB200 = "Davlan/sib200"
 WIKIANN = "wikiann"
 MARC = "clips/marc"
 
+# Test langs for each dataset
+lang_xnli = ["zh", "hi"]
+# lang_sib = ["..._....""]
+
 # Directory of pruned models:
 PR_WIKI = "/pruned_models/WikiAnn"
 PR_XNLI = "/pruned_models/XNLI"

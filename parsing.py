@@ -21,7 +21,7 @@ def get_finetune_parser():
     parser.add_argument(
         "--batch_size",
         type=int,
-        default=1,
+        default=32,
         help="The batch size to be used for training.",
     )
 
@@ -58,6 +58,12 @@ def get_finetune_parser():
         default=True,
         action=argparse.BooleanOptionalAction,
         help="Enable cuda computation",
+    )
+
+    parser.add_argument(
+        "--no_do_train",
+        action=argparse.BooleanOptionalAction,
+        help="No do train",
     )
 
     parser.add_argument(
@@ -101,6 +107,20 @@ def get_finetune_parser():
         type=float,
         default=0.9,
         help="The percentage of the original performance to keep",
+    )
+
+    parser.add_argument(
+        "--resume_path",
+        type=str,
+        default=None,
+        help="Resume checkpoint path",
+    )
+
+    parser.add_argument(
+        "--savedir",
+        type=str,
+        default=None,
+        help="Save checkpoint path",
     )
 
     return parser
