@@ -82,7 +82,7 @@ class AccuracyStoppingCallback(TrainerCallback):
 
             else:  # Else we save the second best checkpoint manually (not possible with default classes)
 
-                torch.save(self._trainer.model, self.model_savedir)
+                self._trainer.model.save_pretrained(self.model_savedir)
                 print(
                     f"\nCurrent Evaluation Accuracy: {round(eval_accuracy, 4)} | Step: {state.global_step}"
                 )
