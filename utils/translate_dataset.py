@@ -9,7 +9,8 @@ def translate_xnli(to_lang, from_lang="en"):
     dataset = load_dataset(XNLI, from_lang)
     # Only translate test and validation sets
     del dataset["train"]
-    dataset.save_to_disk("data/en_xnli_test_val")
+    del dataset["test"]
+    dataset.save_to_disk("data/en_xnli_val")
 
     argostranslate.package.update_package_index()
     available_packages = argostranslate.package.get_available_packages()
@@ -28,12 +29,13 @@ def translate_xnli(to_lang, from_lang="en"):
         row["hypothesis"] = argostranslate.translate.translate(
             row["hypothesis"], from_lang, to_lang
         )
+        return row
 
     return dataset.map(translate_fn)
 
 
-langs_to_translate = ["cs", "id"]
+langs_to_translate = ["cs"]
 
 for lang in langs_to_translate:
     print(f"Translating {lang}")
-    translate_xnli(lang).save_to_disk(f"data/{lang}_xnli_test_val")
+    translate_xnli(lang).save_to_disk(f"data/{lang}_xnli_val")
