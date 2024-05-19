@@ -63,6 +63,11 @@ def get_data_collator(hf_dataset, tokenizer):
     )
 
 
+def filter_context_length(row):
+    return len(row["input_ids"]) <= 512
+
+
+
 def tokenize_xnli(rows, tokenizer):
     return tokenizer(
         rows["premise"], rows["hypothesis"], return_special_tokens_mask=True
@@ -145,7 +150,7 @@ def build_dataset(hf_dataset, tokenizer):
         partial(tokenize_fn, tokenizer=tokenizer),
         batched=True,
         num_proc=4,
-    )
+    ).filter(filter_context_length)
 
     # Need to create a label column for SIB200
     if hf_dataset == SIB200:

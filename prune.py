@@ -26,7 +26,7 @@ from transformers import (
 # We require a custom callback to evaluate at the right times
 class AccuracyStoppingCallback(TrainerCallback):
     def __init__(
-        self, trainer, original_acc, target_percent, savedir, interval
+            self, trainer, original_acc, target_percent, savedir, interval
     ) -> None:
         super().__init__()
 
@@ -48,7 +48,7 @@ class AccuracyStoppingCallback(TrainerCallback):
         # Force the evaluation to happen at specific intervals based on the number of
         # batches per epoch (unfortunately has to be done due to limitations with neural-compressor)
         if ((state.global_step - 2) % self.interval == 0) and (
-            (state.global_step - 2) > 0
+                (state.global_step - 2) > 0
         ):
 
             eval_metrics = self._trainer.evaluate(
@@ -72,7 +72,7 @@ class AccuracyStoppingCallback(TrainerCallback):
                 json.dump(trainer_state, outfile, indent=2)
 
             if (
-                eval_accuracy < self.stopping_acc * self.target_percent
+                    eval_accuracy < self.stopping_acc * self.target_percent
             ):  # To ensure the accuracy stays within the target range
 
                 print(
@@ -149,7 +149,6 @@ def build_pruning_config(args, interval):
         sparsity_decay_type="linear",
     )
 
-
 def main(args):
     print(args)
     model, tokenizer, metric = build_model_tokenizer_metric(
@@ -166,7 +165,7 @@ def main(args):
             partial(tokenize_fn, tokenizer=tokenizer),
             batched=True,
             num_proc=4,
-        )
+        ).filter(filter_context_length)
 
         # Need to create a label column for SIB200
         if hf_dataset == SIB200:
@@ -184,7 +183,6 @@ def main(args):
         arguments = build_trainer_args(args)
 
         for seed in args.seed:
-
             model_c = deepcopy(model)  # Ensure the model is different every time
             output_dir = f"{args.savedir}/{args.type}-{lang}-{seed}"
             arguments.seed = seed
