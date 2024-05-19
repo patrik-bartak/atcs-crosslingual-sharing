@@ -38,7 +38,7 @@ class AccuracyStoppingCallback(TrainerCallback):
         # For saving
         self.acc_list = []
         self.spar_list = []
-        self.model_savedir = f"{savedir}/model.pt"
+        self.model_savedir = savedir
         self.state_savedir = f"{savedir}/state.json"
 
         # Ensure savedir exists
