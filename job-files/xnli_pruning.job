@@ -2,13 +2,13 @@
 
 #SBATCH --partition=gpu
 #SBATCH --gres=gpu:1
-#SBATCH --cpus-per-task=9
+#SBATCH --cpus-per-task=8
 #SBATCH --gpus=1
-#SBATCH --job-name=xnli-finetune
+#SBATCH --job-name=xnli-prune
 #SBATCH --ntasks=1
-#SBATCH --time=04:00:00
+#SBATCH --time=6:00:00
 #SBATCH --mem=32000M
-#SBATCH --output=job_outs/xnli-finetune_%A.out
+#SBATCH --output=job_outs/xnli-prune_%A.out
 
 module purge
 module load 2023
@@ -24,4 +24,13 @@ pip install torch torchvision torchaudio --index-url https://download.pytorch.or
 pip install "optimum[intel]" neural_compressor onnxruntime
 
 # Run code
-python prune.py --dataset=xnli --model=pruned_models/xnli/unpruned --seed 1 2 3 --savedir pruned_models/xnli
+python prune.py \
+    --dataset=xnli \
+    --model=ft_models/xnli \
+    --savedir pruned_models/xnli \
+    --batch-size 16 \
+    --lr 0 \
+    --epochs 10 \
+    --no-max-steps \
+    --seed 41 42 43 \
+    --type "magnitude"
