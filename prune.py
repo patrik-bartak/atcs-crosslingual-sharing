@@ -3,6 +3,8 @@
 
 import os
 import json
+
+import datasets
 import torch
 from math import ceil
 from copy import deepcopy
@@ -160,7 +162,12 @@ def main(args):
     for lang in lang_list:
 
         print(f"Pruning for Language: {lang}")
-        dataset = load_dataset(hf_dataset, lang)
+
+        try:
+            dataset = load_dataset(hf_dataset, lang)
+        except Exception:
+            dataset = datasets.load_from_disk(f"data/{lang}_xnli_val")
+
         tok_dataset = dataset.map(
             partial(tokenize_fn, tokenizer=tokenizer),
             batched=True,

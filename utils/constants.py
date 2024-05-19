@@ -30,4 +30,4 @@ lang_sib = ["ces_Latn", "hin_Deva", "ind_Latn", "nld_Latn", "zho_Hans"]
 lang_wik = ["cs", "hi", "id", "nl", "zh"]
 
 # XNLI (need three other datasets)
-lang_xnli = ["hi", "zh"]
+lang_xnli = ["hi", "zh", "cs", "nl", "id"]
