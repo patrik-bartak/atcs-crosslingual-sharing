@@ -128,7 +128,6 @@ def build_trainer_args(args):
         evaluation_strategy="no",
         save_strategy="no",
         learning_rate=args.lr,
-        no_cuda=not args.cuda,
         do_train=True,
         do_eval=False,
         bf16=False,
@@ -168,7 +167,11 @@ def main(args):
         except Exception:
             dataset = datasets.load_from_disk(f"data/{lang}_xnli_val")
 
-        tok_dataset = dataset.map(
+        val_dataset = dataset[
+            "validation"
+        ]  # May need to be adjusted for each dataset
+
+        val_dataset = val_dataset.map(
             partial(tokenize_fn, tokenizer=tokenizer),
             batched=True,
             num_proc=4,
@@ -177,12 +180,14 @@ def main(args):
         # Need to create a label column for SIB200
         if hf_dataset == SIB200:
             # Map categories to labels
-            tok_dataset = tok_dataset.map(map_categories_to_labels)
-            tok_dataset = tok_dataset.remove_columns("category")
+            val_dataset = val_dataset.map(map_categories_to_labels)
+            val_dataset = val_dataset.remove_columns("category")
 
-        val_dataset = tok_dataset[
-            "validation"
-        ]  # May need to be adjusted for each dataset
+        print(f"Dset sizes (val): ({len(val_dataset)})")
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        print(f"Using device: {device}")
+        if device == "cpu":
+            raise Exception("Should not train on CPU")
 
         # Need this part to align everything (the pruning happens every epoch (step))
         interval = ceil(len(val_dataset) / args.batch_size)
