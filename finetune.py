@@ -1,3 +1,4 @@
+import datasets
 import evaluate
 import numpy as np
 import torch
@@ -31,7 +32,7 @@ def build_model_tokenizer(hf_model_id, dataset_name):
     else:
         raise Exception(f"Dataset {dataset_name} not supported")
 
-    tokenizer = AutoTokenizer.from_pretrained(hf_model_id)
+    tokenizer = AutoTokenizer.from_pretrained(XML_R)
     return model, tokenizer
 
 
@@ -87,11 +88,14 @@ def get_test_data(hf_dataset):
 
 
 # For evaluating per language
-def test_model(trainer: Trainer, tokenizer, hf_dataset, lang_list, tokenize_fn):
+def test_model(trainer: Trainer, tokenizer, hf_dataset, lang_list, tokenize_fn, split="test"):
 
     for lang in lang_list:
-        dataset = load_dataset(hf_dataset, lang)
-        dataset = dataset["test"]
+        try:
+            dataset = load_dataset(hf_dataset, lang)
+        except Exception:
+            dataset = datasets.load_from_disk(f"data/{lang}_xnli_val")
+        dataset = dataset[split]
         print(f"Testing model on lang {lang} with {len(dataset)} samples")
         tok_dataset = dataset.map(
             partial(tokenize_fn, tokenizer=tokenizer),
@@ -132,13 +136,13 @@ def main(args):
         data_collator=data_collator,
         compute_metrics=get_compute_metrics_fn(),
     )
-    trainer.train(resume_from_checkpoint=args.resume_path)
-
-    trainer.save_model(args.savedir)
+    if not args.no_do_train:
+        trainer.train(resume_from_checkpoint=args.resume_path)
+        trainer.save_model(args.savedir)
 
     # Testing on languages
     hf_dataset, lang_list, tokenize_fn = get_test_data(args.dataset)
-    test_model(trainer, tokenizer, hf_dataset, lang_list, tokenize_fn)
+    test_model(trainer, tokenizer, hf_dataset, lang_list, tokenize_fn, split="validation")
 
 
 if __name__ == "__main__":

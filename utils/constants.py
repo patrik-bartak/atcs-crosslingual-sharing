@@ -10,7 +10,9 @@ WIKIANN = "wikiann"
 MARC = "clips/marc"
 
 # Test langs for each dataset
-lang_xnli = ["zh", "hi"]
+# lang_xnli = ["zh", "hi", "nl", "cs", "id"]
+lang_xnli = ["zh", "hi", "cs"]
+# lang_xnli = ["cs"]
 # lang_sib = ["..._....""]
 
 # Directory of pruned models:
