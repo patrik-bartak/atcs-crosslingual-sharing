@@ -3,12 +3,10 @@
 
 import os
 import json
-import torch
 from math import ceil
 from copy import deepcopy
 from utils.dataset import *
 from utils.constants import *
-from datasets import load_metric
 from optimum.intel import INCTrainer
 from parsing import get_finetune_parser
 from neural_compressor import WeightPruningConfig
@@ -136,7 +134,7 @@ def build_trainer_args(args):
 
 def build_pruning_config(args, interval):
     return WeightPruningConfig(
-        target_sparsity=0.5,  # So we can actually prune more (because the default is 0.5)
+        target_sparsity=0.5,  # So we can actually prune more (because the default is 0.9)
         pruning_type=args.type,
         start_step=1,
         end_step=int(args.epochs * interval) + 1,
