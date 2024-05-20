@@ -96,11 +96,11 @@ if __name__ == "__main__":
     else:
         task_name = args.task_name
 
-    plt.figure(figsize=(10, 8))
+    plt.figure(figsize=(6, 5))
     plt.imshow(mean_matrix, cmap="viridis", interpolation="nearest")
     cbar = plt.colorbar(label="Jaccard Similarity (Mean)")
-    plt.xticks(range(len(langs)), langs, rotation=45)
-    plt.yticks(range(len(langs)), langs)
+    plt.xticks(range(len(langs)), langs, rotation=45, fontsize=12)
+    plt.yticks(range(len(langs)), langs, fontsize=12)
     plt.title(
         f"Jaccard Similarity Matrix for {task_name}",
         weight="bold",
@@ -122,7 +122,7 @@ if __name__ == "__main__":
                     color="black",
                 )
 
-    savedir = f"{args.output_dir}/{task_name}.png"
+    savedir = f"{args.output_dir}/sim-{task_name}.png"
     plt.savefig(savedir, dpi=300)
 
     print(f"Saved to {savedir}!")
