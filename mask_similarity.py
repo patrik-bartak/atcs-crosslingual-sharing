@@ -1,8 +1,6 @@
-import argparse
-import json
 import os
-
-import torch
+import json
+import argparse
 from transformers import AutoModel
 
 
@@ -53,7 +51,7 @@ def extract_masks(model, exclude=False):
             continue
 
         else:
-            mask = torch.nonzero(param)
+            mask = param != 0
             named_mask[name] = mask
 
     return named_mask
