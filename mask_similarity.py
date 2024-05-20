@@ -85,6 +85,7 @@ def compute_sparsity_and_jaccard(masks_a, masks_b, path_a, path_b):
     union_params = set(masks_a.keys()) | set(masks_b.keys())
     jacc_dict = {}
     sparsity_dict = {}
+    num_params_dict = {}
 
     # For all params sparsity
     zero_count_a = 0
@@ -94,6 +95,9 @@ def compute_sparsity_and_jaccard(masks_a, masks_b, path_a, path_b):
     # For all params jaccard sim
     union_count = 0
     overlap_count = 0
+    # For all params count
+    params_count_a = 0
+    params_count_b = 0
     for param in union_params:
         try:
             mask_a = masks_a[param]
@@ -103,6 +107,10 @@ def compute_sparsity_and_jaccard(masks_a, masks_b, path_a, path_b):
             print(f"Cannot find param {param} in other model")
             jacc_dict[param] = None
             continue
+        # Computing number of params
+        num_params_dict[param] = {path_a: mask_a.numel(), path_b: mask_b.numel()}
+        params_count_a += mask_a.numel()
+        params_count_b += mask_b.numel()
         # Computing sparsity for each model
         sparsity_a = compute_mask_sparsity(mask_a)
         sparsity_b = compute_mask_sparsity(mask_b)
@@ -120,10 +128,18 @@ def compute_sparsity_and_jaccard(masks_a, masks_b, path_a, path_b):
     jacc_dict["all_params"] = 0 if union_count == 0 else overlap_count / union_count
     sparsity_dict["all_params"] = {
         path_a: zero_count_a / total_count_a,
-        path_b: zero_count_a / total_count_a,
+        path_b: zero_count_b / total_count_b,
+    }
+    num_params_dict["all_params"] = {
+        path_a: params_count_a,
+        path_b: params_count_b,
     }
 
-    return {"jaccard_sim": jacc_dict, "sparsity": sparsity_dict}
+    return {
+        "jaccard_sim": jacc_dict,
+        "sparsity": sparsity_dict,
+        "num_params": num_params_dict,
+    }
 
 
 if __name__ == "__main__":
