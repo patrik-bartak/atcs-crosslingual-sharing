@@ -1,34 +1,60 @@
-import argparse
 import os
-
-from transformers import AutoModel, AutoModelForSequenceClassification
 import json
-
-parser = argparse.ArgumentParser()
-parser.add_argument(
-    "model_a",
-    type=str,
-    help="Path to first model.",
-)
-parser.add_argument(
-    "model_b",
-    type=str,
-    help="Path to second model.",
-)
-parser.add_argument(
-    "--output_dir",
-    default="results/mask_sim",
-    type=str,
-    help="Path to save the mask.",
-)
-args = parser.parse_args()
+import argparse
+from transformers import AutoModel
 
 
-def extract_masks(model):
+def argparser():
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "model_a",
+        type=str,
+        help="Path to first model.",
+    )
+    parser.add_argument(
+        "model_b",
+        type=str,
+        help="Path to second model.",
+    )
+    parser.add_argument(
+        "--output_dir",
+        default="results/mask_sim",
+        type=str,
+        help="Path to save the mask.",
+    )
+    parser.add_argument(
+        "--output_name",
+        default="mag-ces-41.json",
+        type=str,
+        help="Path to save the mask.",
+    )
+    parser.add_argument(
+        "--exclude_others",
+        action="store_true",
+        help="Whether to exclude non-weight parameters.",
+    )
+
+    return parser.parse_args()
+
+
+def extract_masks(model, exclude=False):
     named_mask = {}
+    excluded_params = [
+        "pooler",
+        "embeddings",
+        "bias",
+        "LayerNorm",
+    ]  # Parameters that should not influence similarity
     for name, param in model.named_parameters():
-        mask = param > 0
-        named_mask[name] = mask
+
+        if any(exp in name for exp in excluded_params) and not exclude:
+            continue
+
+        else:
+            mask = param > 0
+            named_mask[name] = mask
+
     return named_mask
 
 
@@ -55,6 +81,7 @@ def jaccard_each(masks_a, masks_b):
         try:
             mask_a = masks_a[param]
             mask_b = masks_b[param]
+
         except KeyError:
             print(f"Cannot find param {param} in other model")
             jacc_sim_dict[param] = None
@@ -71,16 +98,20 @@ def jaccard_each(masks_a, masks_b):
     return jacc_sim_dict
 
 
-model_paths = [args.model_a, args.model_b]
-# model_paths = ["pruned_models/xnli/unpruned", "pruned_models/xnli/unpruned"]
+if __name__ == "__main__":
 
-model_mask_dicts = [
-    extract_masks(AutoModel.from_pretrained(path, num_labels=3)) for path in model_paths
-]
+    args = argparser()
+    model_paths = [args.model_a, args.model_b]
+    model_mask_dicts = [
+        extract_masks(
+            AutoModel.from_pretrained(path, num_labels=3), args.exclude_others
+        )
+        for path in model_paths
+    ]
 
-jacc_dict = jaccard_each(*model_mask_dicts)
+    jacc_dict = jaccard_each(*model_mask_dicts)
 
-os.makedirs(args.output_dir, exist_ok=True)
-save_path = os.path.join(args.output_dir, "mask_sim.json")
-with open(save_path, "w") as f:
-    json.dump(jacc_dict, f, indent=4, sort_keys=True)
+    os.makedirs(args.output_dir, exist_ok=True)
+    save_path = os.path.join(args.output_dir, args.output_name)
+    with open(save_path, "w") as f:
+        json.dump(jacc_dict, f, indent=4, sort_keys=True)
