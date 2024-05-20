@@ -19,7 +19,7 @@ parser.add_argument(
     "--output_dir",
     default="results/mask_sim",
     type=str,
-    help="Path to second model.",
+    help="Path to save the mask.",
 )
 args = parser.parse_args()
 
