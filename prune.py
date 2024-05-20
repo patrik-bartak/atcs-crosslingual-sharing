@@ -54,11 +54,11 @@ def build_model_tokenizer(model_name, dataset_name):
         model = AutoModelForSequenceClassification.from_pretrained(model_name)
         save_dir = PR_XNLI
 
-    elif dataset_name == MARC:
-        model = AutoModelForMultipleChoice.from_pretrained(
+    elif dataset_name == TOXI:
+        model = AutoModelForSequenceClassification.from_pretrained(
             model_name
         )  # I assume this one is what we need
-        save_dir = PR_MQNA
+        save_dir = PR_TOXI
 
     else:
         raise Exception(f"Dataset {dataset_name} not supported")

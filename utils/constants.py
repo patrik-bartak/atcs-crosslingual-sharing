@@ -7,12 +7,12 @@ XML_R = "FacebookAI/xlm-roberta-base"
 XNLI = "xnli"
 SIB200 = "Davlan/sib200"
 WIKIANN = "wikiann"
-MARC = "clips/marc"
+TOXI = "FredZhang7/toxi-text-3M"
 
 # Directory of pruned models:
 PR_WIKI = "/pruned_models/WikiAnn"
 PR_XNLI = "/pruned_models/XNLI"
-PR_MQNA = "/pruned_models/MARC"
+PR_TOXI = "/pruned_models/TOXI"
 PR_TOPP = "/pruned_models/SIB200"
 
 # For SIB200 (converting category to label)

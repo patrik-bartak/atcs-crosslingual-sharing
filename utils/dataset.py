@@ -70,13 +70,8 @@ def tokenize_wikiann(rows, tokenizer):
     return tokenize_and_align_labels(rows, tokenizer)
 
 
-def tokenize_marc(rows, tokenizer):
-    return tokenizer(
-        rows["review_body"],
-        rows["review_title"],
-        rows["product_category"],
-        return_special_tokens_mask=True,
-    )
+def tokenize_toxi(rows, tokenizer):
+    return tokenizer(rows["text"], return_special_tokens_mask=True)
 
 
 def build_dataset(hf_dataset, tokenizer):
@@ -91,10 +86,11 @@ def build_dataset(hf_dataset, tokenizer):
     elif hf_dataset == WIKIANN:
         dataset = load_dataset(WIKIANN, "en")
         tokenize_fn = tokenize_wikiann
-    elif hf_dataset == MARC:
-        # TODO: load the correct data language subset
-        dataset = load_dataset(MARC)
-        tokenize_fn = tokenize_marc
+    elif hf_dataset == TOXI:
+        dataset = load_dataset(TOXI, ignore_verifications=True)
+        dataset = dataset.filter(lambda example: example['lang'] == 'en')
+        dataset = dataset.rename_column('is_toxic', 'label')
+        tokenize_fn = tokenize_toxi
     else:
         raise Exception(f"Dataset {hf_dataset} not supported")
 

@@ -26,8 +26,10 @@ def build_model_tokenizer(hf_model_id, dataset_name):
             hf_model_id, num_labels=7
         )  # Seven different categories
 
-    elif dataset_name == MARC:
-        return NotImplemented
+    elif dataset_name == TOXI:
+        model = AutoModelForSequenceClassification.from_pretrained(
+            hf_model_id, num_labels=2
+        )  # 2 different categories
 
     else:
         raise Exception(f"Dataset {dataset_name} not supported")
