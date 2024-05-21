@@ -36,4 +36,4 @@ python prune.py \
     --epochs 10 \
     --no-max-steps \
     --seed "$seed" \
-    --type "magnitude"
+    --type "snip"

@@ -138,13 +138,13 @@ def build_trainer_args(args):
 def build_pruning_config(args, interval):
     return WeightPruningConfig(
         target_sparsity=0.5,  # So we can actually prune more (because the default is 0.5)
-        pruning_type=args.type,
+        pruning_type=args.type,  # Should be SNIP
         start_step=1,
         end_step=int(args.epochs * interval) + 1,
         pruning_scope="global",
         pruning_op_types=["Conv", "Linear", "Attention"],
         excluded_op_names=["roberta.embeddings"],  # Do not mask the embeddings
-        pattern=args.pattern,
+        pattern=args.pattern,  # Default 1x1
         pruning_frequency=1,
         max_sparsity_ratio_per_op=0.999,  # To enable a component being 'completely' sparse
         sparsity_decay_type="linear",
