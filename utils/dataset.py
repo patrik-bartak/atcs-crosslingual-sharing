@@ -1,11 +1,18 @@
 from functools import partial
 
-from datasets import load_dataset
+from datasets import load_dataset, load_metric
 from transformers import (DataCollatorForTokenClassification,
                           DataCollatorWithPadding)
 
 from utils.constants import *
 
+# For getting the metrics
+metric_acc = load_metric("accuracy", trust_remote_code=True)
+
+def compute_acc(eval_pred):
+    logits, labels = eval_pred
+    predictions = np.argmax(logits, axis=-1)
+    return metric_acc.compute(predictions=predictions, references=labels)
 
 # Function to map categories to labels
 def map_categories_to_labels(example):
@@ -55,6 +62,8 @@ def get_data_collator(hf_dataset, tokenizer):
         else DataCollatorWithPadding(tokenizer=tokenizer)
     )
 
+def filter_context_length(row):
+    return len(row["input_ids"]) <= 512
 
 def tokenize_xnli(rows, tokenizer):
     return tokenizer(
@@ -74,6 +83,51 @@ def tokenize_toxi(rows, tokenizer):
     return tokenizer(rows["text"], return_special_tokens_mask=True)
 
 
+def get_test_data(hf_dataset):
+    if hf_dataset == XNLI:
+        return hf_dataset, lang_xnli, tokenize_xnli
+
+    elif hf_dataset == SIB200:
+        return hf_dataset, lang_sib, tokenize_sib200
+
+    elif hf_dataset == WIKIANN:
+        return hf_dataset, lang_wik, tokenize_wikiann
+
+    elif hf_dataset == TOXI:
+        return hf_dataset, lang_toxi, tokenize_toxi
+
+    else:
+        raise Exception(f"Value {hf_dataset} not supported")
+
+
+def test_model(trainer, tokenizer, hf_dataset, lang_list, tokenize_fn):
+
+    for lang in lang_list:
+        if hf_dataset == TOXI:
+            dataset = load_dataset(TOXI, ignore_verifications=True)
+            dataset = dataset.filter(lambda example: example['lang'] == lang)
+            dataset = dataset.rename_column('is_toxic', 'label')
+            dataset = dataset.remove_columns("lang")
+        else:
+            dataset = load_dataset(hf_dataset, lang)
+
+        tok_dataset = dataset.map(
+            partial(tokenize_fn, tokenizer=tokenizer),
+            batched=True,
+            num_proc=4,
+        )
+
+        # Need to create a label column for SIB200
+        if hf_dataset == SIB200:
+            # Map categories to labels
+            tok_dataset = tok_dataset.map(map_categories_to_labels)
+            tok_dataset = tok_dataset.remove_columns("category")
+
+        test_data = tok_dataset["test"]
+        out = trainer.evaluate(test_data, metric_key_prefix="test")
+        print(f"Results for Language '{lang}':")
+        print(out, "\n")
+
 def build_dataset(hf_dataset, tokenizer):
     if hf_dataset == XNLI:
         dataset = load_dataset(XNLI, "en")
@@ -90,6 +144,7 @@ def build_dataset(hf_dataset, tokenizer):
         dataset = load_dataset(TOXI, ignore_verifications=True)
         dataset = dataset.filter(lambda example: example['lang'] == 'en')
         dataset = dataset.rename_column('is_toxic', 'label')
+        dataset = dataset.remove_columns("lang")
         tokenize_fn = tokenize_toxi
     else:
         raise Exception(f"Dataset {hf_dataset} not supported")

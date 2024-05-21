@@ -25,3 +25,18 @@ cat2idx = {
     "entertainment": 5,
     "geography": 6,
 }
+
+sib_idx2cat = {v: k for k, v in sib_cat2idx.items()}
+
+# For getting the correct test datasets
+# SIB200
+lang_sib = ["ces_Latn", "hin_Deva", "ind_Latn", "nld_Latn", "zho_Hans"]
+
+# WikiAnn
+lang_wik = ["cs", "hi", "id", "nl", "zh"]
+
+# XNLI (need three other datasets)
+lang_xnli = ["hi", "zh", "cs", "nl", "id"]
+
+# toxi-text
+lang_toxi = ["hi", "zh-cn", "cs", "nl", "id"]

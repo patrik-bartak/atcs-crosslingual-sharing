@@ -1,5 +1,4 @@
 import argparse
-
 from utils.constants import *
 
 
@@ -19,10 +18,32 @@ def get_finetune_parser():
     )
 
     parser.add_argument(
-        "--batch_size",
+        "--tokenizer",
+        type=str,
+        default=XML_R,
+        help="The identifier for the tokenizer to be used. Must be an existing HuggingFace tokenizer.",
+    )
+
+    parser.add_argument(
+        "--savedir",
+        type=str,
+        default=None,
+        help="The path to save the best model to.",
+    )
+
+    parser.add_argument(
+        "--batch-size",
         type=int,
         default=1,
         help="The batch size to be used for training.",
+    )
+
+    parser.add_argument(
+        "--seed",
+        type=int,
+        default=42,
+        nargs="+",
+        help="The seed to use for training.",
     )
 
     parser.add_argument(
@@ -40,7 +61,7 @@ def get_finetune_parser():
     )
 
     parser.add_argument(
-        "--log_dir",
+        "--log-dir",
         type=str,
         default="logs",
         help="The directory where the logs will be saved.",
@@ -65,19 +86,25 @@ def get_finetune_parser():
         type=str,
         default=None,
         help="hugging face dataset name",
-        choices={XNLI, SIB200, WIKIANN, TOXI},
+        choices={XNLI, SIB200, WIKIANN, MQA},
     )
 
     parser.add_argument(
-        "--test_run",
+        "--test-run",
         action="store_true",
         help="Test run or not",
     )
 
     parser.add_argument(
-        "--max_steps",
+        "--no-max-steps",
+        action="store_true",
+        help="Whether we use max-steps at all",
+    )
+
+    parser.add_argument(
+        "--max-steps",
         type=int,
-        default=-1,
+        default=20,
         help="Maximum number of training steps",
     )
 
@@ -101,6 +128,13 @@ def get_finetune_parser():
         type=float,
         default=0.9,
         help="The percentage of the original performance to keep",
+    )
+
+    parser.add_argument(
+        "--pattern",
+        type=str,
+        default="1x1",
+        help="The pruning pattern to use",
     )
 
     return parser

@@ -30,6 +30,7 @@ def build_model_tokenizer(hf_model_id, dataset_name):
         model = AutoModelForSequenceClassification.from_pretrained(
             hf_model_id, num_labels=2
         )  # 2 different categories
+        metric = compute_acc
 
     else:
         raise Exception(f"Dataset {dataset_name} not supported")
@@ -44,49 +45,40 @@ def build_trainer_args(args):
         num_train_epochs=args.epochs,
         per_device_train_batch_size=args.batch_size,
         per_device_eval_batch_size=args.batch_size,
-        evaluation_strategy="steps",
-        eval_steps=1_000,
-        save_strategy="steps",
-        save_steps=1_000,
+        evaluation_strategy="epoch",
+        save_strategy="epoch",
         load_best_model_at_end=True,
         learning_rate=args.lr,
         no_cuda=not args.cuda,
-        use_cpu=not args.cuda,
         bf16=False,
-        max_steps=1 if args.test_run else args.max_steps,
+        max_steps=(
+            1 if args.test_run else (-1 if args.no_max_steps else args.max_steps)
+        ),
+        seed=args.seed[0],
+        save_total_limit=3,
     )
-
-
-def get_compute_metrics_fn():
-    metric = evaluate.load('accuracy')
-
-    def accuracy(eval_pred):
-        preds, labs = eval_pred
-        preds = np.argmax(preds, axis=1)
-        return metric.compute(predictions=preds, references=labs)
-
-    return accuracy
 
 
 def main(args):
     print(args)
-    model, tokenizer = build_model_tokenizer(args.model, args.dataset)
+    model, tokenizer, metric = build_model_tokenizer_metric(args.model, args.dataset)
     train_dataset, val_dataset = build_dataset(args.dataset, tokenizer)
-    print(f"Dset sizes (train/val): ({len(train_dataset)}/{len(val_dataset)})")
     data_collator = get_data_collator(args.dataset, tokenizer)
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    print(f"Using device: {device}")
-    if device == "cpu":
-        raise Exception("Should not train on CPU")
     trainer = Trainer(
         model=model,
         args=build_trainer_args(args),
         train_dataset=train_dataset,
-        eval_dataset=val_dataset if not args.test_run else None,
+        eval_dataset=val_dataset,
         data_collator=data_collator,
-        compute_metrics=get_compute_metrics_fn()
+        compute_metrics=metric,
     )
+
     trainer.train()
+    trainer.save_model(args.savedir)
+
+    # Testing on languages
+    hf_dataset, lang_list, tokenize_fn = get_test_data(args.dataset)
+    test_model(trainer, tokenizer, hf_dataset, lang_list, tokenize_fn)
 
 
 if __name__ == "__main__":
