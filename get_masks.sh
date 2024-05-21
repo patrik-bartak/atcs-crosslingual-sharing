@@ -3,7 +3,7 @@
 # Base directories and fixed first model path
 BASE_DIR="pruned_models"
 SEEDS=(41 42 43)
-OUTPUT_DIR="results/mask_sim"
+OUTPUT_DIR="results/mask_sim_snip"
 
 # Languages
 LANGUAGES=("cs" "hi" "id" "nl" "zh") # Adjust this based on the languages you have
@@ -22,12 +22,12 @@ for SEED in "${SEEDS[@]}"; do
     # Loop through each language and seed combination
     for ((i = 0; i < ${#LANGUAGES[@]}; i++)); do
         FIRST_LANG="${LANGUAGES[i]}"
-        FIRST_MODEL="${BASE_DIR}/gradient/snip-${FIRST_LANG}-${SEED}"
+        FIRST_MODEL="${BASE_DIR}/xnli/snip-${FIRST_LANG}-${SEED}"
         
         # Loop through the rest of the languages
         for ((j = i + 1; j < ${#LANGUAGES[@]}; j++)); do
             SECOND_LANG="${LANGUAGES[j]}"
-            SECOND_MODEL="${BASE_DIR}/gradient/snip-${SECOND_LANG}-${SEED}"
+            SECOND_MODEL="${BASE_DIR}/xnli/snip-${SECOND_LANG}-${SEED}"
             
             # Define output names for both possible combinations
             OUTPUT_NAME_1="${FIRST_LANG}-${SECOND_LANG}-${SEED}.json"
