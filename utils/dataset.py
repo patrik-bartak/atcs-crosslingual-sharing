@@ -83,50 +83,6 @@ def tokenize_toxi(rows, tokenizer):
     return tokenizer(rows["text"], return_special_tokens_mask=True)
 
 
-def get_test_data(hf_dataset):
-    if hf_dataset == XNLI:
-        return hf_dataset, lang_xnli, tokenize_xnli
-
-    elif hf_dataset == SIB200:
-        return hf_dataset, lang_sib, tokenize_sib200
-
-    elif hf_dataset == WIKIANN:
-        return hf_dataset, lang_wik, tokenize_wikiann
-
-    elif hf_dataset == TOXI:
-        return hf_dataset, lang_toxi, tokenize_toxi
-
-    else:
-        raise Exception(f"Value {hf_dataset} not supported")
-
-
-def test_model(trainer, tokenizer, hf_dataset, lang_list, tokenize_fn):
-
-    for lang in lang_list:
-        if hf_dataset == TOXI:
-            dataset = load_dataset(TOXI, ignore_verifications=True)
-            dataset = dataset.filter(lambda example: example['lang'] == lang)
-            dataset = dataset.rename_column('is_toxic', 'label')
-            dataset = dataset.remove_columns("lang")
-        else:
-            dataset = load_dataset(hf_dataset, lang)
-
-        tok_dataset = dataset.map(
-            partial(tokenize_fn, tokenizer=tokenizer),
-            batched=True,
-            num_proc=4,
-        )
-
-        # Need to create a label column for SIB200
-        if hf_dataset == SIB200:
-            # Map categories to labels
-            tok_dataset = tok_dataset.map(map_categories_to_labels)
-            tok_dataset = tok_dataset.remove_columns("category")
-
-        test_data = tok_dataset["test"]
-        out = trainer.evaluate(test_data, metric_key_prefix="test")
-        print(f"Results for Language '{lang}':")
-        print(out, "\n")
 
 def build_dataset(hf_dataset, tokenizer):
     if hf_dataset == XNLI:

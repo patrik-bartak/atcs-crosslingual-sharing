@@ -58,27 +58,94 @@ def build_trainer_args(args):
         save_total_limit=3,
     )
 
+def get_compute_metrics_fn():
+    metric = evaluate.load('accuracy')
+
+    def accuracy(eval_pred):
+        preds, labs = eval_pred
+        preds = np.argmax(preds, axis=1)
+        return metric.compute(predictions=preds, references=labs)
+
+    return accuracy
+
+
+def get_test_data(hf_dataset):
+    if hf_dataset == XNLI:
+        return hf_dataset, lang_xnli, tokenize_xnli
+
+    elif hf_dataset == SIB200:
+        return hf_dataset, lang_sib, tokenize_sib200
+
+    elif hf_dataset == WIKIANN:
+        return hf_dataset, lang_wik, tokenize_wikiann
+
+    elif hf_dataset == TOXI:
+        return hf_dataset, lang_toxi, tokenize_toxi
+
+    else:
+        raise Exception(f"Value {hf_dataset} not supported")
+
+
+def test_model(trainer, tokenizer, hf_dataset, lang_list, tokenize_fn):
+
+    for lang in lang_list:
+        if hf_dataset == TOXI:
+            dataset = load_dataset(TOXI, ignore_verifications=True)
+            dataset = dataset.filter(lambda example: example['lang'] == lang)
+            dataset = dataset.rename_column('is_toxic', 'label')
+            dataset = dataset.remove_columns("lang")
+        else:
+            dataset = load_dataset(hf_dataset, lang)
+
+        tok_dataset = dataset.map(
+            partial(tokenize_fn, tokenizer=tokenizer),
+            batched=True,
+            num_proc=4,
+        )
+
+        # Need to create a label column for SIB200
+        if hf_dataset == SIB200:
+            # Map categories to labels
+            tok_dataset = tok_dataset.map(map_categories_to_labels)
+            tok_dataset = tok_dataset.remove_columns("category")
+
+        test_data = tok_dataset["test"]
+        out = trainer.evaluate(test_data, metric_key_prefix="test")
+        print(f"Results for Language '{lang}':")
+        print(out, "\n")
+
+
 
 def main(args):
     print(args)
-    model, tokenizer, metric = build_model_tokenizer_metric(args.model, args.dataset)
+    model, tokenizer = build_model_tokenizer(args.model, args.dataset)
+
     train_dataset, val_dataset = build_dataset(args.dataset, tokenizer)
+    print(f"Dset sizes (train/val): ({len(train_dataset)}/{len(val_dataset)})")
     data_collator = get_data_collator(args.dataset, tokenizer)
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    print(f"Using device: {device}")
+    if device == "cpu":
+        raise Exception("Should not train on CPU")
+
+    print(train_dataset[:50]["label"])
+    # val_dataset = val_dataset.select(range(10))
+
     trainer = Trainer(
         model=model,
         args=build_trainer_args(args),
         train_dataset=train_dataset,
-        eval_dataset=val_dataset,
+        eval_dataset=val_dataset if not args.test_run else None,
         data_collator=data_collator,
-        compute_metrics=metric,
+        compute_metrics=get_compute_metrics_fn(),
     )
-
-    trainer.train()
-    trainer.save_model(args.savedir)
+    if not args.no_do_train:
+        trainer.train(resume_from_checkpoint=args.resume_path)
+        trainer.save_model(args.savedir)
 
     # Testing on languages
     hf_dataset, lang_list, tokenize_fn = get_test_data(args.dataset)
-    test_model(trainer, tokenizer, hf_dataset, lang_list, tokenize_fn)
+    test_model(trainer, tokenizer, hf_dataset, lang_list, tokenize_fn, split="validation")
 
 
 if __name__ == "__main__":

@@ -26,7 +26,7 @@ cat2idx = {
     "geography": 6,
 }
 
-sib_idx2cat = {v: k for k, v in sib_cat2idx.items()}
+sib_idx2cat = {v: k for k, v in cat2idx.items()}
 
 # For getting the correct test datasets
 # SIB200

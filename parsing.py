@@ -86,7 +86,7 @@ def get_finetune_parser():
         type=str,
         default=None,
         help="hugging face dataset name",
-        choices={XNLI, SIB200, WIKIANN, MQA},
+        choices={XNLI, SIB200, WIKIANN, TOXI},
     )
 
     parser.add_argument(
