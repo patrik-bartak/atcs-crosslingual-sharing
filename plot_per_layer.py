@@ -109,7 +109,7 @@ if __name__ == "__main__":
     ax.set_xlabel("Layer")
     ax.set_ylabel("Mean Similarity")
     ax.set_title(
-        f"Mean Similarity per Layer for {args.task_name}",
+        f"Mean Similarity per Layer for {task_name}",
         fontsize=16,
         fontweight="bold",
     )
