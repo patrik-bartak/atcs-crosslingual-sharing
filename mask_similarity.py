@@ -57,6 +57,16 @@ def extract_masks(model, exclude=False):
     return named_mask
 
 
+def compute_jaccard_for_layer(masks_a: list, masks_b: list) -> float:
+    intersects = 0
+    unions = 0
+    for mask_a, mask_b in zip(masks_a, masks_b):
+        intersect, union = compute_union_intersect(mask_a, mask_b)
+        intersects += intersect
+        unions += union
+    return 0 if unions == 0 else intersects / unions
+
+
 def compute_union_intersect(mask_a, mask_b) -> tuple[int, int]:
     union = mask_a | mask_b
     intersect = mask_a & mask_b
@@ -122,6 +132,15 @@ def compute_sparsity_and_jaccard(masks_a, masks_b, path_a, path_b):
         jacc_dict[param] = 0 if union == 0 else intersect / union
         union_count += union
         overlap_count += intersect
+
+    # Compute jaccard for the layers (this script is getting messy, my bad :( )
+    XLM_R_layers = 12
+    for i in range(XLM_R_layers):
+        layer_i_params = [param for param in union_params if f"encoder.layer.{i}." in param]
+        layer_i_masks_a = [masks_a[param] for param in layer_i_params]
+        layer_i_masks_b = [masks_b[param] for param in layer_i_params]
+        jacc_dict[f"layer.{i}"] = compute_jaccard_for_layer(layer_i_masks_a, layer_i_masks_b)
+
     # Add all_params for sparsity and jaccard
     jacc_dict["all_params"] = 0 if union_count == 0 else overlap_count / union_count
     sparsity_dict["all_params"] = {

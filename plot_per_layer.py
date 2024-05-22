@@ -57,7 +57,7 @@ def read_json(filename):
 
 
 if __name__ == "__main__":
-    # python plotting/plot_per_layer.py --task_name=xnli --json_dir=results_snellius/mask_sim
+    # python plot_per_layer.py --task_name=xnli --json_dir=results/mask_sim
     args = argparser()
     langs = get_lang_list(args.task_name)
     layers = list(range(12))  # Assuming 12 layers for XLM-R
@@ -73,10 +73,11 @@ if __name__ == "__main__":
             for seed in args.seeds:
                 json_path = os.path.join(args.json_dir, f"{lang1}-{lang2}-{seed}.json")
                 sim_data = read_json(json_path)["jaccard_sim"]
-                # TODO: finish by selecting the key in the json dict containing the similarity for the entire layer
-                #       we cannot simply take the mean because the parts within the layer have different number of params
-                layer_sim_data = {k: v for k, v in sim_data.items() if "layer" in k}
-                lang_pair_similarities.append(...)
+                # Assuming that the results dict contains layer.i keys for ith layer jaccard similarities
+                layer_sim_data = [sim_data[f"layer.{l}"] for l in layers]
+                if len(layer_sim_data) == 0:
+                    raise Exception("No fields like 'layer.1', 'layer.2', etc found in file. Rerun the mask similarity script to get those.")
+                lang_pair_similarities.append(layer_sim_data)
 
             lang_pair_to_similarities_dict[f"{lang1}-{lang2}"] = np.mean(lang_pair_similarities, axis=0)
 
@@ -100,6 +101,7 @@ if __name__ == "__main__":
         f"Mean Similarity per Layer for {args.task_name}", fontsize=16, fontweight="bold"
     )
     ax.legend()
+    # ax.set_ylim([0, 1])
 
     ax.grid(True, axis="y", which="both", linestyle="--", linewidth=0.5, alpha=0.7)
     ax.set_axisbelow(True)
