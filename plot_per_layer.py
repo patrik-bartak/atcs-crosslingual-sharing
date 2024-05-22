@@ -76,15 +76,26 @@ if __name__ == "__main__":
                 # Assuming that the results dict contains layer.i keys for ith layer jaccard similarities
                 layer_sim_data = [sim_data[f"layer.{l}"] for l in layers]
                 if len(layer_sim_data) == 0:
-                    raise Exception("No fields like 'layer.1', 'layer.2', etc found in file. Rerun the mask similarity script to get those.")
+                    raise Exception(
+                        "No fields like 'layer.1', 'layer.2', etc found in file. Rerun the mask similarity script to get those."
+                    )
                 lang_pair_similarities.append(layer_sim_data)
 
-            lang_pair_to_similarities_dict[f"{lang1}-{lang2}"] = np.mean(lang_pair_similarities, axis=0)
+            lang_pair_to_similarities_dict[f"{lang1}-{lang2}"] = np.mean(
+                lang_pair_similarities, axis=0
+            )
 
     print(lang_pair_to_similarities_dict)
 
+    # To check if it's a specific task (due to the backslash)
+    if args.task_name == SIB200:
+        task_name = "SIB200"
+
+    else:
+        task_name = args.task_name
+
     os.makedirs(args.output_dir, exist_ok=True)
-    output_path = os.path.join(args.output_dir, f"similarity_{args.task_name}.png")
+    output_path = os.path.join(args.output_dir, f"similarity_{task_name}.png")
 
     fig, ax = plt.subplots(figsize=(7, 4))
 
@@ -98,7 +109,9 @@ if __name__ == "__main__":
     ax.set_xlabel("Layer")
     ax.set_ylabel("Mean Similarity")
     ax.set_title(
-        f"Mean Similarity per Layer for {args.task_name}", fontsize=16, fontweight="bold"
+        f"Mean Similarity per Layer for {args.task_name}",
+        fontsize=16,
+        fontweight="bold",
     )
     ax.legend()
     # ax.set_ylim([0, 1])
@@ -107,6 +120,7 @@ if __name__ == "__main__":
     ax.set_axisbelow(True)
 
     plt.tight_layout()
-    # plt.savefig(output_path, dpi=300)
-    # print(f"Saved to sparsity_{args.task_name}.png!")
+    plt.savefig(output_path, dpi=300)
+
+    print(f"Saved to sparsity_{task_name}.png!")
     plt.show()
