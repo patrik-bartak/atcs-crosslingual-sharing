@@ -73,7 +73,8 @@ if __name__ == "__main__":
             for seed in args.seeds:
                 json_path = os.path.join(args.json_dir, f"{lang1}-{lang2}-{seed}.json")
                 sim_data = read_json(json_path)["jaccard_sim"]
-                # TODO: finish by selecting the key containing the similarity for the entire layer
+                # TODO: finish by selecting the key in the json dict containing the similarity for the entire layer
+                #       we cannot simply take the mean because the parts within the layer have different number of params
                 layer_sim_data = {k: v for k, v in sim_data.items() if "layer" in k}
                 lang_pair_similarities.append(...)
 
