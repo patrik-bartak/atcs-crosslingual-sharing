@@ -128,6 +128,7 @@ def build_trainer_args(args):
         evaluation_strategy="no",
         save_strategy="no",
         learning_rate=args.lr,
+        lr_scheduler_type="linear",
         do_train=True,
         do_eval=False,
         bf16=False,
