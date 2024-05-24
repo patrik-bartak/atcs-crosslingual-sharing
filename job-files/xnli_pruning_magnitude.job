@@ -32,7 +32,7 @@ python prune.py \
     --model=ft_models/xnli \
     --savedir pruned_models/xnli \
     --batch-size 16 \
-    --lr 5e-5 \
+    --lr 1e-5 \
     --epochs 10 \
     --no-max-steps \
     --seed "$seed" \
