@@ -158,6 +158,10 @@ def main(args):
     hf_dataset, lang_list, tokenize_fn = get_test_data(args.dataset)
     data_collator = get_data_collator(args.dataset, tokenizer)
 
+    # TODO temporary fix
+    if args.only_en:
+        lang_list = lang_xnli_en
+
     for lang in lang_list:
 
         print(f"Pruning for Language: {lang}")

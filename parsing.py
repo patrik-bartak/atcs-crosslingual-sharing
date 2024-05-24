@@ -137,4 +137,10 @@ def get_finetune_parser():
         help="The pruning pattern to use",
     )
 
+    parser.add_argument(
+        "--only_en",
+        action="store_true",
+        help="Get the english network",
+    )
+
     return parser
