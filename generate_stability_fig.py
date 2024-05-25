@@ -63,32 +63,32 @@ if __name__ == "__main__":
     mean_matrix = np.zeros((len(langs), len(langs)))
     std_matrix = np.zeros((len(langs), len(langs)))
 
-    for i, lang1 in enumerate(langs):
-        for j, lang2 in enumerate(langs):
+    seeds = args.seeds
 
-            if i < j:
+    for i, lang in enumerate(langs):
+        similarity_values = []
+        for k in range(len(seeds)):
+            seed1 = seeds[k]
+            seed2 = seeds[(k + 1) % len(seeds)]
 
-                similarity_values = []
-                for seed in args.seeds:
+            filename = os.path.join(
+                args.base_dir, f"{lang}-{seed1}-{seed2}.json"
+            )
+            if os.path.exists(filename):
+                data = read_json(filename)
+                data = data["jaccard_sim_norm"]["encoder"]["normalized_jacc"]
+                # data = data["jaccard_sim_norm"]["encoder"]["regular_jacc"]
+                similarity_values.append(data)
 
-                    filename = os.path.join(
-                        args.base_dir, f"{lang1}-{lang2}-{seed}.json"
-                    )
-                    if os.path.exists(filename):
-                        data = read_json(filename)
-                        data = data["jaccard_sim_norm"]["encoder"]["normalized_jacc"]
-                        # data = data["jaccard_sim_norm"]["encoder"]["regular_jacc"]
-                        similarity_values.append(data)
+        if similarity_values:
+            mean_similarity = np.mean(similarity_values)
+            std_similarity = np.std(similarity_values)
+            mean_matrix[i, i] = mean_similarity
+            std_matrix[i, i] = std_similarity
 
-                if similarity_values:
-                    mean_similarity = np.mean(similarity_values)
-                    std_similarity = np.std(similarity_values)
-                    mean_matrix[i, j] = mean_similarity
-                    std_matrix[i, j] = std_similarity
-
-                else:
-                    mean_matrix[i, j] = np.nan
-                    std_matrix[i, j] = np.nan
+        else:
+            mean_matrix[i, i] = np.nan
+            std_matrix[i, i] = np.nan
 
     # Plotting
 
@@ -105,7 +105,7 @@ if __name__ == "__main__":
     plt.xticks(range(len(langs)), langs, rotation=45, fontsize=12)
     plt.yticks(range(len(langs)), langs, fontsize=12)
     plt.title(
-        f"Normalized Jaccard Similarity Matrix for {task_name}",
+        f"Stability Matrix for {task_name}",
         weight="bold",
         fontsize=16,
     )
@@ -115,7 +115,7 @@ if __name__ == "__main__":
     for i in range(len(langs)):
         for j in range(len(langs)):
 
-            if i < j and not np.isnan(mean_matrix[i, j]):
+            if i <= j and not np.isnan(mean_matrix[i, j]):
                 plt.text(
                     j,
                     i,
@@ -125,7 +125,7 @@ if __name__ == "__main__":
                     color="black",
                 )
 
-    savedir = f"{args.output_dir}/similarity-{task_name}.png"
+    savedir = f"{args.output_dir}/stability-{task_name}.png"
     plt.savefig(savedir, dpi=300)
 
     print(f"Saved to {savedir}!")
