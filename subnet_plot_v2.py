@@ -1,11 +1,12 @@
-import os
 import argparse
-import numpy as np
+import os
+
 import matplotlib.pyplot as plt
+import numpy as np
 
 from generate_sim_fig import read_json
 from utils.constants import *
-from transformers import AutoModel
+from utils.languages import get_lang_list
 
 
 def argparser():
@@ -24,10 +25,10 @@ def argparser():
         help="List of seeds to process.",
     )
     parser.add_argument(
-        "--base_dir",
+        "--json_dir",
         type=str,
         required=True,
-        help="Base directory where the models are stored.",
+        help="Base directory where the metric jsons are stored.",
     )
     parser.add_argument(
         "--output_dir",
@@ -37,17 +38,6 @@ def argparser():
     )
 
     return parser.parse_args()
-
-
-def get_lang_list(task):
-
-    if task == SIB200:
-        langs = ["ces_Latn", "hin_Deva", "ind_Latn", "nld_Latn", "zho_Hans"]
-
-    else:
-        langs = ["cs", "hi", "id", "nl", "zh", "en"]
-
-    return langs
 
 
 def extract_masks(model, exclude=False):
@@ -134,7 +124,7 @@ if __name__ == "__main__":
         for i in range(len(seeds)):
             seed1 = seeds[i]
             seed2 = seeds[(i + 1) % len(seeds)]
-            metrics_path = os.path.join(args.base_dir, f"{lang}-{seed1}-{seed2}.json")
+            metrics_path = os.path.join(args.json_dir, f"{lang}-{seed1}-{seed2}.json")
             if os.path.exists(metrics_path):
                 data = read_json(metrics_path)
                 spl = data["sparsity"]

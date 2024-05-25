@@ -4,6 +4,7 @@ import argparse
 import numpy as np
 import matplotlib.pyplot as plt
 from utils.constants import *
+from utils.languages import get_lang_list
 
 
 def read_json(filename):
@@ -41,17 +42,6 @@ def argparser():
     )
 
     return parser.parse_args()
-
-
-def get_lang_list(task):
-
-    if task == SIB200:
-        langs = ["ces_Latn", "hin_Deva", "ind_Latn", "nld_Latn", "zho_Hans"]
-
-    else:
-        langs = ["cs", "hi", "id", "nl", "zh", "en"]
-
-    return langs
 
 
 if __name__ == "__main__":

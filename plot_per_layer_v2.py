@@ -6,6 +6,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 from utils.constants import *
+from utils.languages import get_lang_list
 
 
 def argparser():
@@ -36,19 +37,6 @@ def argparser():
         help="Path to save the plots.",
     )
     return parser.parse_args()
-
-
-def get_lang_list(task):
-    if task == SIB200:
-        langs = ["ces_Latn", "hin_Deva", "ind_Latn", "nld_Latn", "zho_Hans"]
-
-    elif task == XNLI:
-        langs = ["cs", "hi", "id", "nl", "zh", "en"]
-
-    else:
-        return NotImplemented
-
-    return langs
 
 
 def read_json(filename):

@@ -5,6 +5,8 @@ import matplotlib.pyplot as plt
 from utils.constants import *
 from transformers import AutoModel
 
+from utils.languages import get_lang_list
+
 
 def argparser():
     parser = argparse.ArgumentParser()
@@ -40,18 +42,6 @@ def argparser():
     )
 
     return parser.parse_args()
-
-
-def get_lang_list(task):
-
-    if task == SIB200:
-        langs = ["ces_Latn", "hin_Deva", "ind_Latn", "nld_Latn", "zho_Hans"]
-
-    else:
-        return NotImplemented
-
-    return langs
-
 
 def extract_masks(model, exclude=False):
     named_mask = {}
