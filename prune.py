@@ -3,6 +3,7 @@
 
 import os
 import json
+import evaluate
 from math import ceil
 from copy import deepcopy
 from utils.dataset import *
@@ -19,6 +20,24 @@ from transformers import (
     TrainerCallback,
 )
 
+
+def get_ner_acc(eval_preds):
+    logits, labels = eval_preds
+    predictions = np.argmax(logits, axis=-1)
+    d= compute_ner_acc(labels, predictions)
+    return d
+
+def compute_ner_acc(labels, predictions):
+    # Remove ignored index (special tokens) and convert to labels
+    metric = evaluate.load("seqeval")
+    label_names = ['O', 'B-PER', 'I-PER', 'B-ORG', 'I-ORG', 'B-LOC', 'I-LOC']
+    true_labels = [[label_names[l] for l in label if l != -100] for label in labels]
+    true_predictions = [
+        [label_names[p] for (p, l) in zip(prediction, label) if l != -100]
+        for prediction, label in zip(predictions, labels)
+    ]
+    all_metrics = metric.compute(predictions=true_predictions, references=true_labels)
+    return {"eval_accuracy": all_metrics["overall_accuracy"]}
 
 # We require a custom callback to evaluate at the right times
 class AccuracyStoppingCallback(TrainerCallback):
@@ -91,7 +110,7 @@ class AccuracyStoppingCallback(TrainerCallback):
 def build_model_tokenizer_metric(model_name, tok_name, dataset_name):
     if dataset_name == WIKIANN:
         model = AutoModelForTokenClassification.from_pretrained(model_name)
-        metric = None  # TODO: Implement
+        metric = get_ner_acc
 
     elif dataset_name == SIB200:
         model = AutoModelForSequenceClassification.from_pretrained(model_name)
@@ -99,14 +118,11 @@ def build_model_tokenizer_metric(model_name, tok_name, dataset_name):
 
     elif dataset_name == XNLI:
         model = AutoModelForSequenceClassification.from_pretrained(model_name)
-        metric = compute_acc  # TODO: Check if correct
+        metric = compute_acc
 
     elif dataset_name == TOXI:
-        model = AutoModelForMultipleChoice.from_pretrained(
-            model_name
-        )  # I assume this one is what we need
-        metric = None  # TODO: Implement
-
+        model = AutoModelForSequenceClassification.from_pretrained(model_name)
+        metric = compute_acc
     else:
         raise Exception(f"Dataset {dataset_name} not supported")
 
@@ -158,12 +174,25 @@ def main(args):
     for lang in lang_list:
 
         print(f"Pruning for Language: {lang}")
-        dataset = load_dataset(hf_dataset, lang)
-        tok_dataset = dataset.map(
+        if hf_dataset == TOXI:
+            dataset = load_dataset(hf_dataset, ignore_verifications=True)
+            dataset = dataset.filter(lambda example: example['lang'] == lang)
+            dataset = dataset.rename_column('is_toxic', 'label')
+            dataset = dataset.remove_columns("lang")
+        else:
+            dataset = load_dataset(hf_dataset, lang)
+
+        if hf_dataset == WIKIANN:
+            tok_dataset = dataset.map(
+                partial(tokenize_fn, tokenizer=tokenizer),
+                batched=True,
+                remove_columns=dataset["validation"].column_names,
+                num_proc=4)
+        else: 
+            tok_dataset = dataset.map(
             partial(tokenize_fn, tokenizer=tokenizer),
             batched=True,
-            num_proc=4,
-        )
+            num_proc=4)
 
         # Need to create a label column for SIB200
         if hf_dataset == SIB200:
@@ -171,9 +200,10 @@ def main(args):
             tok_dataset = tok_dataset.map(map_categories_to_labels)
             tok_dataset = tok_dataset.remove_columns("category")
 
-        val_dataset = tok_dataset[
-            "validation"
-        ]  # May need to be adjusted for each dataset
+        if hf_dataset == TOXI:
+            val_dataset = tok_dataset["train"]
+        else:
+            val_dataset = tok_dataset["validation"]
 
         # Need this part to align everything (the pruning happens every epoch (step))
         interval = ceil(len(val_dataset) / args.batch_size)

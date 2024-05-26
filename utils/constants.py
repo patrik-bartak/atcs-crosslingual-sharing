@@ -31,3 +31,6 @@ lang_wik = ["cs", "hi", "id", "nl", "zh"]
 
 # XNLI (need three other datasets)
 lang_xnli = ["hi", "zh"]
+
+# toxi-text
+lang_toxi = ["hi", "zh-cn", "cs", "nl", "id"]

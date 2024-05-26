@@ -44,6 +44,12 @@ def get_lang_list(task):
 
     elif task == XNLI:
         langs = ["cs", "hi", "id", "nl", "zh"]
+    
+    elif task == WIKIANN:
+        langs = ["cs", "hi", "id", "nl", "zh"]
+        
+    elif task == TOXI:
+        langs = ["hi", "zh-cn", "cs", "nl", "id"]
 
     else:
         return NotImplemented
