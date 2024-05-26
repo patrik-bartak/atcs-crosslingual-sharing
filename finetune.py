@@ -19,6 +19,7 @@ import numpy as np
 
 def build_model_tokenizer_metric(hf_model_id, dataset_name):
     if dataset_name == WIKIANN:
+        model=None
         metric = None
 
     elif dataset_name == XNLI:
