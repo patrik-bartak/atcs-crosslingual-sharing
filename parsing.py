@@ -138,3 +138,32 @@ def get_finetune_parser():
     )
 
     return parser
+
+def eval_parser():
+    """
+    Get arg parser for the finetuning script.
+    :return: The parser.
+    """
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--model",
+        nargs=2,
+        type=str,
+        action='append',
+        metavar=('local_path','dataset'),
+        help="Model path and and its trained dataset name",
+    )
+
+    parser.add_argument(
+        "--lang",
+        type=str,
+        help="Language that model is pruned on.",
+    )
+
+    parser.add_argument(
+        "--saved-plots",
+        type=str,
+        help="path for storing plots.",
+    )
+    return parser
