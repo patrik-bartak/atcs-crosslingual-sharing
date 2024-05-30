@@ -85,10 +85,22 @@ def plot_jaccard_all(datasets, heatmap, lang, save_path):
     std_mat = np.std(heatmap, axis=2)
 
     # Format mean ± std for each cell
-    annot = np.array([["{:.2f} ± {:.2f}".format(mean, std) if mean != 0 else "" for mean, std in zip(mean_row, std_row)] for mean_row, std_row in zip(mean_mat, std_mat)])
-    print(annot)
+    annot = np.array(
+        [
+            [
+                "{:.2f} ± {:.2f}".format(mean, std) if mean != 0 else ""
+                for mean, std in zip(mean_row, std_row)
+            ]
+            for mean_row, std_row in zip(mean_mat, std_mat)
+        ]
+    )
     sns.heatmap(
-        mean_mat, annot=annot, cmap="viridis", fmt="", xticklabels=x_labels, yticklabels=y_labels
+        mean_mat,
+        annot=annot,
+        cmap="viridis",
+        fmt="",
+        xticklabels=x_labels,
+        yticklabels=y_labels,
     )
 
     plt.title(
@@ -109,19 +121,18 @@ def jaccard_all(masks_list):
     for k, masks in enumerate(masks_list):
         for i in range(num_models):
             for j in range(i + 1, num_models):
-                heatmap[i][j][k] = jaccard_all_params_from(
-                    masks[i], masks[j]
-                )
-    return heatmap 
+                heatmap[i][j][k] = jaccard_all_params_from(masks[i](), masks[j]())
+    return heatmap
 
 
 def plot_jaccard_layers(layer_overlap_map, lang, save_path):
     for label, v in layer_overlap_map.items():
-        plt.plot(v[0],
-                np.mean(np.array(v[1]), axis=0),
-                marker="o",
-                label=label,
-            )
+        plt.plot(
+            v[0],
+            np.mean(np.array(v[1]), axis=0),
+            marker="o",
+            label=label,
+        )
 
     plt.title(
         f"Parameter Overlap Per Layer \n for {lang} Across All Tasks",
@@ -138,8 +149,10 @@ def plot_jaccard_layers(layer_overlap_map, lang, save_path):
 def jaccard_layers(masks_list, datasets):
     x_labels = datasets
     y_labels = datasets
+
     def _label(i, j):
         return f"{x_labels[i]}-{y_labels[j]}"
+
     # if multiple masks are passed, we compute avg of layer overlaps.
     num_models = len(masks_list[0])
     # layer_overlap_map[label] = [x-axis, [y-axis..]] where x-axis is layers number and y-axis is the overlap ratio
@@ -147,7 +160,7 @@ def jaccard_layers(masks_list, datasets):
     for masks in masks_list:
         for i in range(num_models):
             for j in range(i + 1, num_models):
-                layers = jaccard_layer_from(masks[i], masks[j])
+                layers = jaccard_layer_from(masks[i](), masks[j]())
                 x = []
                 y = []
                 for l in layers.keys():
@@ -157,24 +170,73 @@ def jaccard_layers(masks_list, datasets):
                 label = _label(i, j)
                 if label not in layer_overlap_map:
                     layer_overlap_map[label] = [x, [y]]
+                    continue
                 layer_overlap_map[label][1].append(y)
-                
+
     return layer_overlap_map
+
+
+def _mask(model_path, dataset):
+    model, _, _ = build_model_tokenizer(model_path, dataset)
+    mask = extract_mask(model, _EXCLUDED_LAYERS)
+    return mask
+
+
+def _process_inputs(models):
+    seeds_to_models = {}
+    for model_path, dataset, seed in models:
+        p = (model_path, dataset)
+        print(p)
+        if seed not in seeds_to_models:
+            seeds_to_models[seed] = [p]
+            continue
+        seeds_to_models[seed].append(p)
+    
+    # sort the dataset to aligned model between seed.
+    for key, v in seeds_to_models.items():
+        v.sort(key=lambda x: x[1])
+        seeds_to_models[key] = v
+
+    _check_alignment_beween_seeds(seeds_to_models)
+    return seeds_to_models
+
+
+def _dataset(model_dataset_list):
+    print(model_dataset_list)
+    return [dataset for _, dataset in model_dataset_list]
+
+def _check_dup(datasets):
+     if len(set(_dataset(datasets))) != len(datasets):
+            raise Exception(f"duplicated dataset: {datasets}")
+
+def _check_alignment_beween_seeds(seeds_to_models):
+    items = list(seeds_to_models.items())
+    _, prev_v = items[0]
+    _check_dup(prev_v)
+    for key, v in items[1:]:
+        if _dataset(v) != _dataset(prev_v):
+            raise Exception(
+                f"model not aligned between seeds: prev {prev_v[1]} and curr {v[1]}"
+            )
+        _check_dup(v)
+        prev_v = v
 
 
 def main(args):
     print(args)
-    masks = []
-    x_labels = []
-    for model, dataset in args.model:
-        model, _, _ = build_model_tokenizer(model, dataset)
-        mask = extract_mask(model, _EXCLUDED_LAYERS)
-        x_labels.append(dataset)
-        masks.append(mask)
+    masks_list = []
+    seed_to_model = _process_inputs(args.model)
+    for _, models_info in seed_to_model.items():
+        masks = []
+        for model_path, dataset in models_info:
+            masks.append(lambda path=model_path, dataset=dataset: _mask(path, dataset))
+        masks_list.append(masks)
 
-    heap_map = jaccard_all([masks])
+    # just use any one of the dataset because they all have to be the same.
+    x_labels = _dataset(list(seed_to_model.values())[0])
+    heap_map = jaccard_all(masks_list)
     plot_jaccard_all(x_labels, heap_map, args.lang, args.saved_plots)
-    layer_ratio_map = jaccard_layers([masks], x_labels)
+    layer_ratio_map = jaccard_layers(masks_list, x_labels)
     plot_jaccard_layers(layer_ratio_map, args.lang, args.saved_plots)
 
 

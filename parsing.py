@@ -148,11 +148,11 @@ def eval_parser():
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--model",
-        nargs=2,
+        nargs=3,
         type=str,
         action='append',
-        metavar=('local_path','dataset'),
-        help="Model path and and its trained dataset name",
+        metavar=('local_path','dataset', "seed"),
+        help="We pass in the model path along with metadata about trained dataset and seed",
     )
 
     parser.add_argument(
