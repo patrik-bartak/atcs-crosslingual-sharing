@@ -171,7 +171,7 @@ def build_dataset_wikiann(hf_dataset, tokenizer):
       partial(tokenize_fn, tokenizer=tokenizer),
       batched=True,
       remove_columns=dataset["train"].column_names,
-      remove_columns=dataset["validation"].column_names,
+    #   remove_columns=dataset["validation"].column_names,
       num_proc=4)
     # Some datasets may need us to manually call .train_test_split() to get the splits
     train_dataset = tok_dataset["train"]

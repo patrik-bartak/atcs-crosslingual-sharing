@@ -1,6 +1,6 @@
 import re
 from utils.constants import *
-from prune import build_model_tokenizer
+from prune import build_model_tokenizer_metric
 from parsing import eval_parser
 import numpy as np
 import matplotlib.pyplot as plt
@@ -108,8 +108,8 @@ def plot_jaccard_all(datasets, heatmap, lang, save_path):
         fontsize=15,
         fontweight="bold",
     )
-    plt.xticks(fontsize=12)
-    plt.yticks(fontsize=12)
+    plt.xticks(fontsize=8)
+    plt.yticks(fontsize=8)
     plt.savefig(f"{save_path}/{lang}_jaccard_all")
     plt.close()
 
@@ -139,9 +139,9 @@ def plot_jaccard_layers(layer_overlap_map, lang, save_path):
         fontsize=15,
         fontweight="bold",
     )
-    plt.xticks(fontsize=12)
-    plt.yticks(fontsize=12)
-    plt.legend(fontsize=12)
+    plt.xticks(fontsize=8)
+    plt.yticks(fontsize=8)
+    plt.legend(fontsize=8)
     plt.savefig(f"{save_path}/{lang}_jaccard_layers")
     plt.close()
 
@@ -177,7 +177,7 @@ def jaccard_layers(masks_list, datasets):
 
 
 def _mask(model_path, dataset):
-    model, _, _ = build_model_tokenizer(model_path, dataset)
+    model, _, _ = build_model_tokenizer_metric(model_path, "", dataset)
     mask = extract_mask(model, _EXCLUDED_LAYERS)
     return mask
 
@@ -191,7 +191,7 @@ def _process_inputs(models):
             seeds_to_models[seed] = [p]
             continue
         seeds_to_models[seed].append(p)
-    
+
     # sort the dataset to aligned model between seed.
     for key, v in seeds_to_models.items():
         v.sort(key=lambda x: x[1])
@@ -205,9 +205,11 @@ def _dataset(model_dataset_list):
     print(model_dataset_list)
     return [dataset for _, dataset in model_dataset_list]
 
+
 def _check_dup(datasets):
-     if len(set(_dataset(datasets))) != len(datasets):
-            raise Exception(f"duplicated dataset: {datasets}")
+    if len(set(_dataset(datasets))) != len(datasets):
+        raise Exception(f"duplicated dataset: {datasets}")
+
 
 def _check_alignment_beween_seeds(seeds_to_models):
     items = list(seeds_to_models.items())
@@ -234,6 +236,8 @@ def main(args):
 
     # just use any one of the dataset because they all have to be the same.
     x_labels = _dataset(list(seed_to_model.values())[0])
+    # don't use prefix in plotting
+    x_labels = [label.split("/")[-1] for label in x_labels]
     heap_map = jaccard_all(masks_list)
     plot_jaccard_all(x_labels, heap_map, args.lang, args.saved_plots)
     layer_ratio_map = jaccard_layers(masks_list, x_labels)
