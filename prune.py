@@ -126,6 +126,8 @@ def build_model_tokenizer_metric(model_name, tok_name, dataset_name):
     else:
         raise Exception(f"Dataset {dataset_name} not supported")
 
+    if tok_name == "":
+        return model, None, metric
     tokenizer = AutoTokenizer.from_pretrained(tok_name)
     return model, tokenizer, metric
 
