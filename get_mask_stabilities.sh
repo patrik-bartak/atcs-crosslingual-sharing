@@ -3,16 +3,17 @@
 # Base directories and fixed first model path
 BASE_DIR="pruned_models"
 SEEDS=(41 42 43)
-OUTPUT_DIR="results/mask_sim_snip/toxitext"
-PRUNING_TYPE="snip" # or magnitude
-#DATASET="xnli"
+OUTPUT_DIR="results/mask_sim_magnitude/xnli"
+PRUNING_TYPE="magnitude" # or magnitude
+DATASET="xnli"
 #DATASET="wikiann"
 #DATASET="sib200"
-DATASET="toxitext"
+#DATASET="toxitext"
 
 # Languages
 #LANGUAGES=("cs" "hi" "id" "nl" "zh" "en") # Adjust this based on the languages you have
-LANGUAGES=("cs" "hi" "id" "nl" "zh") # Adjust this based on the languages you have
+#LANGUAGES=("cs" "hi" "id" "nl" "zh") # Adjust this based on the languages you have
+LANGUAGES=("en") # Adjust this based on the languages you have
 #LANGUAGES=("ces_Latn" "hin_Deva" "ind_Latn" "nld_Latn" "zho_Hans") # Adjust this based on the languages you have
 
 #EXTRA="/model.pt"

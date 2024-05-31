@@ -4,7 +4,7 @@ import os
 import matplotlib.pyplot as plt
 import numpy as np
 
-from generate_sim_fig import read_json
+from generate_sim_fig_across_langs import read_json
 from utils.constants import *
 from utils.languages import get_lang_list
 
@@ -84,18 +84,22 @@ def plot_sparsity_per_layer(layer_sparsity, languages, output_path, task_name):
 
     fig, ax = plt.subplots(figsize=(7, 4))
 
+    pruning_type = "mag_pruning"
+
     for idx, lang in enumerate(languages):
+        label = f"{lang}+{pruning_type}"
+
         ax.bar(
             x + idx * width,
             [layer_sparsity[layer][idx] for layer in layers],
             width,
-            label=lang,
+            label=label,
         )
 
     ax.set_xlabel("Layer")
     ax.set_ylabel("Average Sparsity")
     ax.set_title(
-        f"Average Sparsity per Layer for {task_name}", fontsize=16, fontweight="bold"
+        f"Mean Sparsity per Layer for {task_name}", fontsize=16, fontweight="bold"
     )
     ax.set_xticks(x + width * (len(languages) - 1) / 2)
     ax.set_xticklabels(layers)
@@ -112,9 +116,8 @@ def plot_sparsity_per_layer(layer_sparsity, languages, output_path, task_name):
 if __name__ == "__main__":
     args = argparser()
     langs = get_lang_list(args.task_name)
+    langs = ["en"]
     layers = list(range(12))  # Assuming 12 layers
-
-    sparsity_dict = {lang: {} for lang in langs}
     seeds = args.seeds
 
     layer_sparsity = np.zeros((len(layers), len(langs), len(seeds)))
@@ -133,6 +136,7 @@ if __name__ == "__main__":
 
     layer_sparsity = layer_sparsity.mean(axis=2)
 
+    print(layer_sparsity)
     # To check if it's a specific task (due to the backslash)
     if args.task_name == SIB200:
         task_name = "SIB200"
@@ -141,5 +145,5 @@ if __name__ == "__main__":
         task_name = args.task_name
 
     os.makedirs(args.output_dir, exist_ok=True)
-    output_path = os.path.join(args.output_dir, f"sparsity_{task_name}.png")
+    output_path = os.path.join(args.output_dir, f"sparsity_en_mag_{task_name}.png")
     plot_sparsity_per_layer(layer_sparsity, langs, output_path, task_name)
