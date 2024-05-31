@@ -9,22 +9,18 @@ import matplotlib as mpl
 
 mpl.rcParams["figure.dpi"] = 300
 
-_EXCLUDED_LAYERS = [
-    "roberta.pooler.dense.weight",
-    "roberta.pooler.dense.bias",
-    "classifier.weight",
-    "classifier.bias",
-    "classifier.dense.weight",
-    "classifier.dense.bias",
-    "classifier.out_proj.weight",
-    "classifier.out_proj.bias",
+_PARAM_KEYWORDS_TO_KEEP = [
+    "encoder",
 ]
 
 
-def extract_mask(model, filters):
+def _contains_any(string, substrings):
+    return any(substring in string for substring in substrings)
+
+def extract_mask(model, params_names_to_keep):
     named_mask = {}
     for name, param in model.named_parameters():
-        if name in filters:
+        if not _contains_any(name, params_names_to_keep):
             continue
         mask = param > 0
         named_mask[name] = mask
@@ -51,27 +47,23 @@ def extract_num(sample_string):
     return numbers[0]
 
 
-def has_numbers(inputString):
-    return any(char.isdigit() for char in inputString)
-
-
 def jaccard_layer_from(masks_a, masks_b):
     # assume masks_a and masks_b contains the same keys and corresponding
     # tensor dimenstion
     layer_overlap = {}
     for name_param, mask_a in masks_a.items():
-        if not has_numbers(name_param):
-            continue
         l_n = extract_num(name_param)
         mask_b = masks_b[name_param]
         union = mask_a | mask_b
         union_count = union.sum().item()
         overlap = mask_a & mask_b
         overlap_count = overlap.sum().item()
-        if l_n in layer_overlap:
-            layer_overlap[l_n][0] += overlap_count
-            layer_overlap[l_n][1] += union_count
-        layer_overlap[l_n] = [overlap_count, union_count]
+        if l_n not in layer_overlap:
+            layer_overlap[l_n] = [overlap_count, union_count]
+            continue
+        layer_overlap[l_n][0] = layer_overlap[l_n][0] + overlap_count
+        layer_overlap[l_n][1] = layer_overlap[l_n][1] + union_count
+        
     return layer_overlap
 
 
@@ -127,9 +119,11 @@ def jaccard_all(masks_list):
 
 def plot_jaccard_layers(layer_overlap_map, lang, save_path):
     for label, v in layer_overlap_map.items():
+        x = v[0]
+        y = np.mean(np.array(v[1]), axis=0)
         plt.plot(
-            v[0],
-            np.mean(np.array(v[1]), axis=0),
+            x,
+            y,
             marker="o",
             label=label,
         )
@@ -160,7 +154,10 @@ def jaccard_layers(masks_list, datasets):
     for masks in masks_list:
         for i in range(num_models):
             for j in range(i + 1, num_models):
-                layers = jaccard_layer_from(masks[i](), masks[j]())
+                a = masks[i]()
+                b = masks[j]()
+                p = jaccard_all_params_from(a, b)
+                layers = jaccard_layer_from(a, b)
                 x = []
                 y = []
                 for l in layers.keys():
@@ -178,7 +175,7 @@ def jaccard_layers(masks_list, datasets):
 
 def _mask(model_path, dataset):
     model, _, _ = build_model_tokenizer_metric(model_path, "", dataset)
-    mask = extract_mask(model, _EXCLUDED_LAYERS)
+    mask = extract_mask(model, _PARAM_KEYWORDS_TO_KEEP)
     return mask
 
 
@@ -186,7 +183,6 @@ def _process_inputs(models):
     seeds_to_models = {}
     for model_path, dataset, seed in models:
         p = (model_path, dataset)
-        print(p)
         if seed not in seeds_to_models:
             seeds_to_models[seed] = [p]
             continue
@@ -202,7 +198,6 @@ def _process_inputs(models):
 
 
 def _dataset(model_dataset_list):
-    print(model_dataset_list)
     return [dataset for _, dataset in model_dataset_list]
 
 
