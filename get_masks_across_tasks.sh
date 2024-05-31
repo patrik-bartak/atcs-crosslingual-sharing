@@ -3,16 +3,19 @@
 # Base directories and fixed first model path
 BASE_DIR="pruned_models"
 SEEDS=(41 42 43)
-OUTPUT_DIR="results/mask_sim_snip/toxitext"
 PRUNING_TYPE="snip" # or magnitude
 #DATASET="xnli"
 #DATASET="wikiann"
 #DATASET="sib200"
-DATASET="toxitext"
+DATASETS=("xnli" "wikiann" "sib200" "toxitext")
+
+# "en", "nl", etc.
+LANG=$1
 
 # Languages
 #LANGUAGES=("cs" "hi" "id" "nl" "zh" "en") # Adjust this based on the languages you have
-LANGUAGES=("cs" "hi" "id" "nl" "zh") # Adjust this based on the languages you have
+OUTPUT_DIR="results/mask_sim_snip/$LANG"
+#LANGUAGES=("cs" "hi" "id" "nl" "zh") # Adjust this based on the languages you have
 #LANGUAGES=("ces_Latn" "hin_Deva" "ind_Latn" "nld_Latn" "zho_Hans") # Adjust this based on the languages you have
 
 #EXTRA="/model.pt"
@@ -30,22 +33,22 @@ output_file_exists() {
 # Loop through each seed
 for SEED in "${SEEDS[@]}"; do
     # Loop through each language and seed combination
-    for ((i = 0; i < ${#LANGUAGES[@]}; i++)); do
-        FIRST_LANG="${LANGUAGES[i]}"
-        FIRST_MODEL="${BASE_DIR}/${DATASET}/${PRUNING_TYPE}-${FIRST_LANG}-${SEED}${EXTRA}"
+    for ((i = 0; i < ${#DATASETS[@]}; i++)); do
+        FIRST_DSET="${DATASETS[i]}"
+        FIRST_MODEL="${BASE_DIR}/${FIRST_DSET}/${PRUNING_TYPE}-${LANG}-${SEED}${EXTRA}"
         
         # Loop through the rest of the languages
-        for ((j = i + 1; j < ${#LANGUAGES[@]}; j++)); do
-            SECOND_LANG="${LANGUAGES[j]}"
-            SECOND_MODEL="${BASE_DIR}/${DATASET}/${PRUNING_TYPE}-${SECOND_LANG}-${SEED}${EXTRA}"
+        for ((j = i + 1; j < ${#DATASETS[@]}; j++)); do
+            SECOND_DSET="${DATASETS[j]}"
+            SECOND_MODEL="${BASE_DIR}/${SECOND_DSET}/${PRUNING_TYPE}-${LANG}-${SEED}${EXTRA}"
             
             # Define output names for both possible combinations
-            OUTPUT_NAME_1="${FIRST_LANG}-${SECOND_LANG}-${SEED}.json"
-            OUTPUT_NAME_2="${SECOND_LANG}-${FIRST_LANG}-${SEED}.json"
+            OUTPUT_NAME_1="${FIRST_DSET}-${SECOND_DSET}-${SEED}.json"
+            OUTPUT_NAME_2="${SECOND_DSET}-${FIRST_DSET}-${SEED}.json"
             
             # Check if either output file already exists
             if output_file_exists "$OUTPUT_NAME_1" || output_file_exists "$OUTPUT_NAME_2"; then
-                echo "Comparison already made for $FIRST_LANG and $SECOND_LANG for seed $SEED. Skipping..."
+                echo "Comparison already made for $FIRST_DSET and $SECOND_DSET for seed $SEED. Skipping..."
             else
                 echo "Running for model: $FIRST_MODEL and $SECOND_MODEL..."
                 python mask_similarity.py "$FIRST_MODEL" "$SECOND_MODEL" --output_dir "$OUTPUT_DIR" --output_name "$OUTPUT_NAME_1"

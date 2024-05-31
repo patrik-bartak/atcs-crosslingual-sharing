@@ -1,10 +1,11 @@
-import os
 import argparse
-import numpy as np
-import matplotlib.pyplot as plt
-from utils.constants import *
-from transformers import AutoModel
+import os
 
+import matplotlib.pyplot as plt
+import numpy as np
+
+from generate_sim_fig_across_langs import read_json
+from utils.constants import *
 from utils.languages import get_lang_list
 
 
@@ -24,10 +25,10 @@ def argparser():
         help="List of seeds to process.",
     )
     parser.add_argument(
-        "--base_dir",
+        "--json_dir",
         type=str,
         required=True,
-        help="Base directory where the models are stored.",
+        help="Base directory where the metric jsons are stored.",
     )
     parser.add_argument(
         "--output_dir",
@@ -35,13 +36,9 @@ def argparser():
         type=str,
         help="Path to save the mask.",
     )
-    parser.add_argument(
-        "--exclude_others",
-        action="store_true",
-        help="Whether to exclude non-weight parameters.",
-    )
 
     return parser.parse_args()
+
 
 def extract_masks(model, exclude=False):
     named_mask = {}
@@ -80,39 +77,30 @@ def average_sparsity(masks_list):
     return average_sparsity_dict
 
 
-def plot_sparsity_per_layer(sparsity_dict, layers, output_path, task_name):
-    languages = list(sparsity_dict.keys())
-    layer_sparsity = {layer: [] for layer in layers}
-
-    for lang in languages:
-        for layer in layers:
-            layer_name = f"encoder.layer.{layer}"
-            sparsities = [
-                sparsity
-                for param, sparsity in sparsity_dict[lang].items()
-                if layer_name in param
-            ]
-            average_sparsity = np.mean(sparsities) if sparsities else 0
-            layer_sparsity[layer].append(average_sparsity)
-
+def plot_sparsity_per_layer(layer_sparsity, languages, output_path, task_name):
     # Plotting
     x = np.arange(len(layers))
     width = 0.15
 
     fig, ax = plt.subplots(figsize=(7, 4))
 
+    pruning_type = "mag_pruning"
+
     for idx, lang in enumerate(languages):
+        # label = f"{lang}+{pruning_type}"
+        label = f"{lang}"
+
         ax.bar(
             x + idx * width,
             [layer_sparsity[layer][idx] for layer in layers],
             width,
-            label=lang,
+            label=label,
         )
 
     ax.set_xlabel("Layer")
     ax.set_ylabel("Average Sparsity")
     ax.set_title(
-        f"Average Sparsity per Layer for {task_name}", fontsize=16, fontweight="bold"
+        f"Mean Sparsity per Layer for {task_name}", fontsize=16, fontweight="bold"
     )
     ax.set_xticks(x + width * (len(languages) - 1) / 2)
     ax.set_xticklabels(layers)
@@ -130,28 +118,27 @@ if __name__ == "__main__":
     args = argparser()
     langs = get_lang_list(args.task_name)
     layers = list(range(12))  # Assuming 12 layers
+    seeds = args.seeds
 
-    sparsity_dict = {lang: {} for lang in langs}
+    task_name = args.task_name
 
-    for lang in langs:
+    layer_sparsity = np.zeros((len(layers), len(langs), len(seeds)))
+
+    for idx, lang in enumerate(langs):
         masks_list = []
-        for seed in args.seeds:
-            model_path = os.path.join(args.base_dir, f"snip-{lang}-{seed}")
-            if os.path.exists(model_path):
-                model = AutoModel.from_pretrained(model_path)
-                masks = extract_masks(model, args.exclude_others)
-                masks_list.append(masks)
+        for i in range(len(seeds)):
+            seed1 = seeds[i]
+            seed2 = seeds[(i + 1) % len(seeds)]
+            metrics_path = os.path.join(args.json_dir, f"{lang}-{seed1}-{seed2}.json")
+            if os.path.exists(metrics_path):
+                data = read_json(metrics_path)
+                spl = data["sparsity"]
+                for l in layers:
+                    layer_sparsity[l, idx, i] = list(spl[f"encoder.layer.{l}."].values())[0]
 
-        if masks_list:
-            sparsity_dict[lang] = average_sparsity(masks_list)
-
-    # To check if it's a specific task (due to the backslash)
-    if args.task_name == SIB200:
-        task_name = "SIB200"
-
-    else:
-        task_name = args.task_name
+    layer_sparsity = layer_sparsity.mean(axis=2)
+    print(layer_sparsity)
 
     os.makedirs(args.output_dir, exist_ok=True)
     output_path = os.path.join(args.output_dir, f"sparsity_{task_name}.png")
-    plot_sparsity_per_layer(sparsity_dict, layers, output_path, task_name)
+    plot_sparsity_per_layer(layer_sparsity, langs, output_path, task_name)

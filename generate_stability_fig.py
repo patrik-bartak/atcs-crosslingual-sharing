@@ -4,12 +4,13 @@ import argparse
 import numpy as np
 import matplotlib.pyplot as plt
 from utils.constants import *
+from utils.languages import get_lang_list
 
 
 def read_json(filename):
     with open(filename, "r") as f:
         data = json.load(f)
-        return data["jaccard_sim"]["all_params"]
+        return data
 
 
 def argparser():
@@ -22,7 +23,7 @@ def argparser():
     )
     parser.add_argument(
         "--output_dir",
-        default="figures",
+        default="figures_replot_patrik",
         type=str,
         help="Path to save the figure.",
     )
@@ -43,26 +44,6 @@ def argparser():
     return parser.parse_args()
 
 
-def get_lang_list(task):
-
-    if task == SIB200:
-        langs = ["ces_Latn", "hin_Deva", "ind_Latn", "nld_Latn", "zho_Hans"]
-    
-    elif task == XNLI:
-        langs = ["cs", "hi", "id", "nl", "zh"]
-    
-    elif task == WIKIANN:
-        langs = ["cs", "hi", "id", "nl", "zh"]
-    
-    elif task == TOXI:
-        langs = ["hi", "zh-cn", "cs", "nl", "id"]
-   
-    else:
-        return NotImplemented
-
-    return langs
-
-
 if __name__ == "__main__":
 
     args = argparser()
@@ -72,29 +53,32 @@ if __name__ == "__main__":
     mean_matrix = np.zeros((len(langs), len(langs)))
     std_matrix = np.zeros((len(langs), len(langs)))
 
-    for i, lang1 in enumerate(langs):
-        for j, lang2 in enumerate(langs):
+    seeds = args.seeds
 
-            if i < j:
+    for i, lang in enumerate(langs):
+        similarity_values = []
+        for k in range(len(seeds)):
+            seed1 = seeds[k]
+            seed2 = seeds[(k + 1) % len(seeds)]
 
-                similarity_values = []
-                for seed in args.seeds:
+            filename = os.path.join(
+                args.base_dir, f"{lang}-{seed1}-{seed2}.json"
+            )
+            if os.path.exists(filename):
+                data = read_json(filename)
+                data = data["jaccard_sim_norm"]["encoder"]["normalized_jacc"]
+                # data = data["jaccard_sim_norm"]["encoder"]["regular_jacc"]
+                similarity_values.append(data)
 
-                    filename = os.path.join(
-                        args.base_dir, f"{lang1}-{lang2}-{seed}.json"
-                    )
-                    if os.path.exists(filename):
-                        similarity_values.append(read_json(filename))
+        if similarity_values:
+            mean_similarity = np.mean(similarity_values)
+            std_similarity = np.std(similarity_values)
+            mean_matrix[i, i] = mean_similarity
+            std_matrix[i, i] = std_similarity
 
-                if similarity_values:
-                    mean_similarity = np.mean(similarity_values)
-                    std_similarity = np.std(similarity_values)
-                    mean_matrix[i, j] = mean_similarity
-                    std_matrix[i, j] = std_similarity
-
-                else:
-                    mean_matrix[i, j] = np.nan
-                    std_matrix[i, j] = np.nan
+        else:
+            mean_matrix[i, i] = np.nan
+            std_matrix[i, i] = np.nan
 
     # Plotting
 
@@ -111,7 +95,7 @@ if __name__ == "__main__":
     plt.xticks(range(len(langs)), langs, rotation=45, fontsize=12)
     plt.yticks(range(len(langs)), langs, fontsize=12)
     plt.title(
-        f"Jaccard Similarity Matrix for {task_name}",
+        f"Stability Matrix for {task_name}",
         weight="bold",
         fontsize=16,
     )
@@ -121,17 +105,17 @@ if __name__ == "__main__":
     for i in range(len(langs)):
         for j in range(len(langs)):
 
-            if i < j and not np.isnan(mean_matrix[i, j]):
+            if i <= j and not np.isnan(mean_matrix[i, j]):
                 plt.text(
                     j,
                     i,
-                    f"{mean_matrix[i, j]:.2f}\n±{std_matrix[i, j]:.2f}",
+                    f"{mean_matrix[i, j]:.3f}\n±{std_matrix[i, j]:.3f}",
                     ha="center",
                     va="center",
                     color="black",
                 )
 
-    savedir = f"{args.output_dir}/sim-{task_name}.png"
+    savedir = f"{args.output_dir}/stability-{task_name}.png"
     plt.savefig(savedir, dpi=300)
 
     print(f"Saved to {savedir}!")
