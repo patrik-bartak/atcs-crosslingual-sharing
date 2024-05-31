@@ -94,6 +94,7 @@ if __name__ == "__main__":
         ax.plot(
             layers,
             data,
+            marker="o",
             label=lang_pair,
         )
 

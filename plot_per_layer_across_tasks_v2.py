@@ -12,8 +12,8 @@ from utils.languages import get_lang_list
 def argparser():
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--task_name",
-        default=SIB200,
+        "--lang_name",
+        default="cs",
         type=str,
         help="Name of the task.",
     )
@@ -47,23 +47,23 @@ def read_json(filename):
 if __name__ == "__main__":
     # python plot_per_layer.py --task_name=xnli --json_dir=results/mask_sim_snip
     args = argparser()
-    langs = get_lang_list(args.task_name)
     layers = list(range(12))  # Assuming 12 layers for XLM-R
 
-    task_name = args.task_name
+    tasks = ["xnli", "wikiann", "sib200", "toxitext"]
+
+    lang = args.lang_name
 
     for jacc_type in ["normalized_jacc", "regular_jacc"]:
 
-        sparsity_dict = {lang: {} for lang in langs}
         lang_pair_to_similarities_dict = dict()
 
-        for i in range(len(langs)):
-            for j in range(i + 1, len(langs)):
-                lang1 = langs[i]
-                lang2 = langs[j]
+        for i in range(len(tasks)):
+            for j in range(i + 1, len(tasks)):
+                task1 = tasks[i]
+                task2 = tasks[j]
                 lang_pair_similarities = []
                 for seed in args.seeds:
-                    json_path = os.path.join(args.json_dir, task_name, f"{lang1}-{lang2}-{seed}.json")
+                    json_path = os.path.join(args.json_dir, lang, f"{task1}-{task2}-{seed}.json")
                     sim_norm_data = read_json(json_path)["jaccard_sim_norm"]
                     # Assuming that the results dict contains layer.i keys for ith layer jaccard similarities
                     layer_sim_data = [sim_norm_data[f"encoder.layer.{l}."][jacc_type] for l in layers]
@@ -73,14 +73,14 @@ if __name__ == "__main__":
                         )
                     lang_pair_similarities.append(layer_sim_data)
 
-                lang_pair_to_similarities_dict[f"{lang1}-{lang2}"] = np.mean(
+                lang_pair_to_similarities_dict[f"{task1}-{task2}"] = np.mean(
                     lang_pair_similarities, axis=0
                 )
 
         print(lang_pair_to_similarities_dict)
 
         os.makedirs(args.output_dir, exist_ok=True)
-        output_path = os.path.join(args.output_dir, f"{jacc_type}-similarity_layer_{task_name}.png")
+        output_path = os.path.join(args.output_dir, f"{jacc_type}-similarity_layer_{lang}.png")
 
         fig, ax = plt.subplots(figsize=(7, 5))
 
@@ -94,7 +94,7 @@ if __name__ == "__main__":
 
         ax.set_xlabel("Layer")
         ax.set_ylabel("Mean Similarity")
-        title = f"Mean Similarity per Layer for {task_name}"
+        title = f"Mean Similarity per Layer for {lang}"
         ax.set_title(
             title if jacc_type == "regular_jacc" else f"Normalized {title}",
             fontsize=16,
@@ -109,5 +109,5 @@ if __name__ == "__main__":
         plt.tight_layout()
         plt.savefig(output_path, dpi=300)
 
-        print(f"Saved to similarity_layer_{task_name}.png!")
+        print(f"Saved to similarity_layer_{lang}.png!")
         plt.show()

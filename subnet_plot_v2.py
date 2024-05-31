@@ -87,7 +87,8 @@ def plot_sparsity_per_layer(layer_sparsity, languages, output_path, task_name):
     pruning_type = "mag_pruning"
 
     for idx, lang in enumerate(languages):
-        label = f"{lang}+{pruning_type}"
+        # label = f"{lang}+{pruning_type}"
+        label = f"{lang}"
 
         ax.bar(
             x + idx * width,
@@ -116,9 +117,10 @@ def plot_sparsity_per_layer(layer_sparsity, languages, output_path, task_name):
 if __name__ == "__main__":
     args = argparser()
     langs = get_lang_list(args.task_name)
-    langs = ["en"]
     layers = list(range(12))  # Assuming 12 layers
     seeds = args.seeds
+
+    task_name = args.task_name
 
     layer_sparsity = np.zeros((len(layers), len(langs), len(seeds)))
 
@@ -135,15 +137,8 @@ if __name__ == "__main__":
                     layer_sparsity[l, idx, i] = list(spl[f"encoder.layer.{l}."].values())[0]
 
     layer_sparsity = layer_sparsity.mean(axis=2)
-
     print(layer_sparsity)
-    # To check if it's a specific task (due to the backslash)
-    if args.task_name == SIB200:
-        task_name = "SIB200"
-
-    else:
-        task_name = args.task_name
 
     os.makedirs(args.output_dir, exist_ok=True)
-    output_path = os.path.join(args.output_dir, f"sparsity_en_mag_{task_name}.png")
+    output_path = os.path.join(args.output_dir, f"sparsity_{task_name}.png")
     plot_sparsity_per_layer(layer_sparsity, langs, output_path, task_name)
