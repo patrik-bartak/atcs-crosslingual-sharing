@@ -23,7 +23,7 @@ def argparser():
     )
     parser.add_argument(
         "--output_dir",
-        default="figures",
+        default="figures_replot_patrik",
         type=str,
         help="Path to save the figure.",
     )
