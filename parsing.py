@@ -1,5 +1,4 @@
 import argparse
-
 from utils.constants import *
 
 
@@ -19,10 +18,32 @@ def get_finetune_parser():
     )
 
     parser.add_argument(
-        "--batch_size",
+        "--tokenizer",
+        type=str,
+        default=XML_R,
+        help="The identifier for the tokenizer to be used. Must be an existing HuggingFace tokenizer.",
+    )
+
+    parser.add_argument(
+        "--savedir",
+        type=str,
+        default=None,
+        help="The path to save the best model to.",
+    )
+
+    parser.add_argument(
+        "--batch-size",
         type=int,
         default=1,
         help="The batch size to be used for training.",
+    )
+
+    parser.add_argument(
+        "--seed",
+        type=int,
+        default=42,
+        nargs="+",
+        help="The seed to use for training.",
     )
 
     parser.add_argument(
@@ -40,7 +61,7 @@ def get_finetune_parser():
     )
 
     parser.add_argument(
-        "--log_dir",
+        "--log-dir",
         type=str,
         default="logs",
         help="The directory where the logs will be saved.",
@@ -65,19 +86,25 @@ def get_finetune_parser():
         type=str,
         default=None,
         help="hugging face dataset name",
-        choices={XNLI, SIB200, WIKIANN, MARC},
+        choices={XNLI, SIB200, WIKIANN, TOXI},
     )
 
     parser.add_argument(
-        "--test_run",
+        "--test-run",
         action="store_true",
         help="Test run or not",
     )
 
     parser.add_argument(
-        "--max_steps",
+        "--no-max-steps",
+        action="store_true",
+        help="Whether we use max-steps at all",
+    )
+
+    parser.add_argument(
+        "--max-steps",
         type=int,
-        default=-1,
+        default=20,
         help="Maximum number of training steps",
     )
 
@@ -103,4 +130,40 @@ def get_finetune_parser():
         help="The percentage of the original performance to keep",
     )
 
+    parser.add_argument(
+        "--pattern",
+        type=str,
+        default="1x1",
+        help="The pruning pattern to use",
+    )
+
+    return parser
+
+def eval_parser():
+    """
+    Get arg parser for the finetuning script.
+    :return: The parser.
+    """
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--model",
+        nargs=3,
+        type=str,
+        action='append',
+        metavar=('local_path','dataset', "seed"),
+        help="We pass in the model path along with metadata about trained dataset and seed",
+    )
+
+    parser.add_argument(
+        "--lang",
+        type=str,
+        help="Language that model is pruned on.",
+    )
+
+    parser.add_argument(
+        "--saved-plots",
+        type=str,
+        help="path for storing plots.",
+    )
     return parser

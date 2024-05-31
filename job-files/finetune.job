@@ -1,0 +1,32 @@
+#!/bin/bash
+
+#SBATCH --partition=gpu
+#SBATCH --gres=gpu:1
+#SBATCH --cpus-per-task=9
+#SBATCH --gpus=1
+#SBATCH --job-name=sibft
+#SBATCH --ntasks=1
+#SBATCH --time=01:00:00
+#SBATCH --mem=32000M
+#SBATCH --output=job_outs/sibft_%A.out
+
+module purge
+module load 2023
+module load Anaconda3/2023.07-2
+
+# Activate the environment
+source activate acts_xling_gpu_env
+
+# Run the code
+file_dir=$HOME/atcs-crosslingual-sharing
+savedir=$file_dir/ft_models/sib200ft
+ckpt_dir=$file_dir/checkpoints
+log_dir=$file_dir/logs
+srun python -u $file_dir/finetune.py \
+    --savedir $savedir \
+    --dataset "Davlan/sib200" \
+    --checkpts $ckpt_dir \
+    --log-dir $log_dir \
+    --batch-size 16 \
+    --lr 1e-5 \
+    --epochs 20 \

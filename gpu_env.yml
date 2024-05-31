@@ -21,4 +21,5 @@ dependencies:
     - matplotlib>=3.4.3
     - numpy==1.23.1
     - "optimum[neural-compressor]"
+    - seqeval==1.2.2
     - evaluate==0.4.2
