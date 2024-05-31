@@ -4,7 +4,7 @@ import os
 import matplotlib.pyplot as plt
 import numpy as np
 
-from generate_sim_fig_across_langs import read_json
+from plotting_scripts.generate_sim_fig_across_langs import read_json
 from utils.constants import *
 from utils.languages import get_lang_list
 

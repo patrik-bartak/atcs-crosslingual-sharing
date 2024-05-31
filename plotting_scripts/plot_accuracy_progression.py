@@ -65,7 +65,7 @@ for language in languages:
     plt.title(f"{task} : Accuracy Progression with Increase in Sparsity Levels ({language})")
     plt.grid(True)
     plt.legend()
-    plot_dir = f'plots'
+    plot_dir = f'../plots'
     os.makedirs(plot_dir, exist_ok=True)
     plt.savefig(f'{plot_dir}/{task}_{language}_acc_prog.png')
     plt.close()
